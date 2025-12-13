@@ -9,63 +9,86 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
-  String? selectedTime; // เวลาที่ผู้ใช้เลือก
+  String? selectedTime;
 
   @override
   Widget build(BuildContext context) {
-    // เวลาที่ Admin ตั้ง → จำกัดแค่ 10 เวลา
     final times = QueueManager().availableTimes.take(10).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("จองคิว")),
+      backgroundColor: const Color(0xFFF4F7F6),
+      appBar: AppBar(
+        title: const Text("จองคิว"),
+        centerTitle: true,
+        backgroundColor: const Color(0xFFE6F4EF),
+        elevation: 0,
+      ),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: times.length,
         itemBuilder: (context, index) {
           final time = times[index];
-
           final isSelected = selectedTime == time;
 
-          return GestureDetector(
-            onTap: () {
-              // ถ้ากดไปแล้ว ห้ามกดซ้ำ
-              if (selectedTime != null) return;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Material(
+              elevation: isSelected ? 3 : 6,
+              shadowColor: Colors.black.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(24),
+              color: isSelected
+                  ? const Color(0xFFDFF3EC)
+                  : Colors.white,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(24),
+                splashColor:
+                    const Color(0xFFBEE7D8).withValues(alpha: 0.4),
+                onTap: () {
+                  setState(() {
+                    selectedTime = time;
+                  });
 
-              setState(() {
-                selectedTime = time;
-              });
+                  QueueManager().addBooking(time);
 
-              // บันทึกคิวจริง
-              QueueManager().addBooking(time);
-
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('จองคิวเวลา $time สำเร็จ')),
-              );
-            },
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
-              decoration: BoxDecoration(
-                color: isSelected ? Colors.green.shade100 : Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isSelected ? Colors.green : Colors.grey.shade300,
-                  width: 2,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    time,
-                    style: const TextStyle(fontSize: 18),
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('เลือกคิวเวลา $time แล้ว'),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 22,
+                    horizontal: 20,
                   ),
-                  const Spacer(),
-                  if (isSelected)
-                    const Icon(Icons.check_circle, color: Colors.green)
-                  else if (selectedTime != null)
-                    const Icon(Icons.lock, color: Colors.grey)
-                ],
+                  child: Row(
+                    children: [
+                      Text(
+                        time,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF2F5D50),
+                        ),
+                      ),
+                      const Spacer(),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        child: isSelected
+                            ? const Icon(
+                                Icons.check_circle,
+                                key: ValueKey('checked'),
+                                color: Color(0xFF4CAF93),
+                                size: 28,
+                              )
+                            : const SizedBox(
+                                key: ValueKey('empty'),
+                              ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           );
