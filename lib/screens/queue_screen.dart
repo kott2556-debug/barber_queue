@@ -58,7 +58,7 @@ class QueueScreen extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF2F5D50),
+                            color: Color.fromARGB(255, 44, 94, 80),
                           ),
                         ),
                       ],
