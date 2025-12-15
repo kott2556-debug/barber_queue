@@ -54,7 +54,7 @@ class QueueScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 16),
                         Text(
-                          "ฉันนัดตัดผม : ${latestBooking['time']}",
+                          "เวลาที่จอง: ${latestBooking['time']}",
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,

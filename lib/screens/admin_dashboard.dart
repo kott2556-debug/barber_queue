@@ -6,20 +6,59 @@ class AdminDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF4F7F6),
       appBar: AppBar(
         title: const Text("Admin Dashboard"),
         centerTitle: true,
-        backgroundColor: Colors.black87,
+        backgroundColor: const Color(0xFF1F3C34),
+        elevation: 0,
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
+            // ---------- HEADER ----------
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE6F4EF),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                children: const [
+                  CircleAvatar(
+                    radius: 26,
+                    backgroundColor: Color(0xFF4CAF93),
+                    child: Icon(Icons.admin_panel_settings,
+                        color: Colors.white, size: 30),
+                  ),
+                  SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "ผู้ดูแลระบบ",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        "จัดการคิวและระบบร้าน",
+                        style: TextStyle(color: Colors.black54),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 30),
+
             const Text(
-              "เมนูผู้ดูแลระบบ",
+              "เมนูหลัก",
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
@@ -28,41 +67,52 @@ class AdminDashboard extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // --- เมนู 1 ดูคิวทั้งหมด ---
-            _adminMenuItem(
+            // ---------- MENU 1 : ดูคิว ----------
+            _adminMenuCard(
+              context: context,
               icon: Icons.list_alt,
               title: "ดูคิวทั้งหมด",
-              color: Colors.blueGrey.shade800,
+              subtitle: "ดูรายการจองของลูกค้าทั้งหมด",
+              color: const Color(0xFF4CAF93),
               onTap: () {
-                // ไปหน้า /queue ก็ได้ หรือทำหน้า admin ใหม่ก็ได้
                 Navigator.pushNamed(context, '/queue');
               },
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: 16),
 
-            // --- เมนู 2 จัดการคิว ---
-            _adminMenuItem(
+            // ---------- MENU 2 : จัดการคิว ----------
+            _adminMenuCard(
+              context: context,
               icon: Icons.edit_calendar,
               title: "จัดการคิว",
-              color: Colors.teal.shade700,
+              subtitle: "เพิ่ม / ลบ เวลา • ล้างคิว",
+              color: const Color(0xFF3F7F6A),
               onTap: () {
+                Navigator.pushNamed(context, '/admin_manage');
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("ฟีเจอร์จะมาภายหลัง"))
+                  const SnackBar(
+                    content: Text("ฟีเจอร์จัดการคิวจะเพิ่มในขั้นถัดไป"),
+                  ),
                 );
               },
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: 16),
 
-            // --- เมนู 3 ตั้งค่า ---
-            _adminMenuItem(
+            // ---------- MENU 3 : ตั้งค่า ----------
+            _adminMenuCard(
+              context: context,
               icon: Icons.settings,
               title: "ตั้งค่าระบบ",
-              color: Colors.indigo.shade700,
+              subtitle: "ตั้งค่าเวลาเปิดร้าน / ระบบ",
+              color: const Color(0xFF2F5D50),
               onTap: () {
+                Navigator.pushNamed(context, '/admin_settings');
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("ฟีเจอร์จะมาภายหลัง"))
+                  const SnackBar(
+                    content: Text("ฟีเจอร์ตั้งค่าระบบจะเพิ่มในขั้นถัดไป"),
+                  ),
                 );
               },
             ),
@@ -72,41 +122,62 @@ class AdminDashboard extends StatelessWidget {
     );
   }
 
-  // Widget ปุ่มเมนูแบบสวย ๆ ใช้ซ้ำ
-  Widget _adminMenuItem({
+  // ---------- Reusable Card ----------
+  Widget _adminMenuCard({
+    required BuildContext context,
     required IconData icon,
     required String title,
+    required String subtitle,
     required Color color,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.red.withValues(alpha: 0.1),
-              blurRadius: 6,
-              offset: const Offset(2, 3),
-            )
-          ],
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.white, size: 28),
-            const SizedBox(width: 20),
-            Text(
-              title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
+    return Material(
+      elevation: 6,
+      borderRadius: BorderRadius.circular(22),
+      shadowColor: Colors.black.withValues(alpha: 0.15),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(22),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: Colors.white, size: 34),
+              const SizedBox(width: 18),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            )
-          ],
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.white70,
+                size: 18,
+              )
+            ],
+          ),
         ),
       ),
     );

@@ -36,13 +36,10 @@ class _BookingScreenState extends State<BookingScreen> {
               elevation: isSelected ? 3 : 6,
               shadowColor: Colors.black.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(24),
-              color: isSelected
-                  ? const Color(0xFFDFF3EC)
-                  : Colors.white,
+              color: isSelected ? const Color(0xFFDFF3EC) : Colors.white,
               child: InkWell(
                 borderRadius: BorderRadius.circular(24),
-                splashColor:
-                    const Color(0xFFBEE7D8).withValues(alpha: 0.4),
+                splashColor: const Color(0xFFBEE7D8).withValues(alpha: 0.4),
                 onTap: () {
                   setState(() {
                     selectedTime = time;
@@ -52,9 +49,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('เลือกคิวเวลา $time แล้ว'),
-                    ),
+                    SnackBar(content: Text('เลือกคิวเวลา $time แล้ว')),
                   );
                 },
                 child: Container(
@@ -82,9 +77,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                 color: Color(0xFF4CAF93),
                                 size: 28,
                               )
-                            : const SizedBox(
-                                key: ValueKey('empty'),
-                              ),
+                            : const SizedBox(key: ValueKey('empty')),
                       ),
                     ],
                   ),

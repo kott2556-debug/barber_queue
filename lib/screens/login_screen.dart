@@ -55,6 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     await _saveUser(name, phone);
     if (!mounted) return;
+
     // ---- เงื่อนไขเข้า Admin ----
     if (name == "admin" && phone == "2468") {
       Navigator.pushReplacementNamed(context, '/admin');
