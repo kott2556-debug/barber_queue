@@ -9,185 +9,157 @@ class AdminManageQueueScreen extends StatefulWidget {
       _AdminManageQueueScreenState();
 }
 
-class _AdminManageQueueScreenState
-    extends State<AdminManageQueueScreen> {
-  final queueManager = QueueManager();
+class _AdminManageQueueScreenState extends State<AdminManageQueueScreen> {
+  final qm = QueueManager();
 
-  void _changeStatus(int index, String status) {
+  // =====================
+  // เรียกคิวถัดไป
+  // =====================
+  void _callNextQueue() {
     setState(() {
-      queueManager.bookings[index]['status'] = status;
+      for (var booking in qm.bookings) {
+        booking['status'] = 'waiting';
+      }
+
+      if (qm.bookings.isNotEmpty) {
+        qm.bookings.first['status'] = 'serving';
+      }
     });
   }
 
-  void _removeQueue(int index) {
-    setState(() {
-      queueManager.bookings.removeAt(index);
-    });
+  // =====================
+  // แสดงสถานะคิว
+  // =====================
+  Widget _statusChip(String status) {
+    Color color;
+    String text;
+
+    switch (status) {
+      case 'serving':
+        color = Colors.green;
+        text = 'กำลังให้บริการ';
+        break;
+      default:
+        color = Colors.orange;
+        text = 'รอคิว';
+    }
+
+    return Chip(
+      label: Text(
+        text,
+        style: const TextStyle(color: Colors.white),
+      ),
+      backgroundColor: color,
+    );
   }
 
-  void _clearAllQueues() {
+  // =====================
+  // ยืนยันลบคิว
+  // =====================
+  void _confirmDelete(int index) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("ยืนยันการล้างคิว"),
-        content:
-            const Text("คุณต้องการลบคิวทั้งหมดใช่หรือไม่?"),
+      builder: (context) => AlertDialog(
+        title: const Text("ยืนยันการลบคิว"),
+        content: const Text("ลูกค้าไม่มาใช่หรือไม่?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text("ยกเลิก"),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
-              setState(() {
-                queueManager.bookings.clear();
-              });
+              _deleteQueue(index);
               Navigator.pop(context);
             },
-            child: const Text("ล้างทั้งหมด"),
+            child: const Text("ลบคิว"),
           ),
         ],
       ),
     );
   }
 
+  // =====================
+  // ลบคิวจริง
+  // =====================
+  void _deleteQueue(int index) {
+    setState(() {
+      if (index >= 0 && index < qm.bookings.length) {
+        qm.bookings.removeAt(index);
+      }
+    });
+  }
+
+  // =====================
+  // UI
+  // =====================
   @override
   Widget build(BuildContext context) {
-    final bookings = queueManager.bookings;
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7F6),
       appBar: AppBar(
         title: const Text("จัดการคิว"),
         centerTitle: true,
-        backgroundColor: const Color(0xFF1F3C34),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete_forever),
-            tooltip: "ล้างคิวทั้งหมด",
-            onPressed:
-                bookings.isEmpty ? null : _clearAllQueues,
-          ),
-        ],
       ),
-      body: bookings.isEmpty
+
+      body: qm.bookings.isEmpty
           ? const Center(
               child: Text(
-                "ยังไม่มีคิวในระบบ",
+                "ยังไม่มีคิว",
                 style: TextStyle(fontSize: 18),
               ),
             )
           : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: bookings.length,
+              itemCount: qm.bookings.length,
               itemBuilder: (context, index) {
-                final booking = bookings[index];
+                final booking = qm.bookings[index];
+                final status = booking['status'];
 
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Material(
-                    elevation: 6,
-                    borderRadius: BorderRadius.circular(22),
-                    child: Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(22),
-                        color: Colors.white,
-                      ),
-                      child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.content_cut,
-                                  color: Color(0xFF4CAF93)),
-                              const SizedBox(width: 10),
-                              Text(
-                                "เวลา ${booking['time']}",
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const Spacer(),
-                              IconButton(
-                                icon: const Icon(Icons.delete,
-                                    color: Colors.red),
-                                onPressed: () =>
-                                    _removeQueue(index),
-                              ),
-                            ],
+                return Card(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      child: Text('${index + 1}'),
+                    ),
+                    title: Text(booking['name']),
+                    subtitle: Text(
+                      "เบอร์: ${booking['phone']} | เวลา: ${booking['time']}",
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _statusChip(status),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.delete,
+                            color: Colors.red,
                           ),
-
-                          const SizedBox(height: 10),
-
-                          Wrap(
-                            spacing: 10,
-                            children: [
-                              _statusButton(
-                                label: "รอ",
-                                isActive:
-                                    booking['status'] ==
-                                        "Pending",
-                                color: Colors.orange,
-                                onTap: () =>
-                                    _changeStatus(index,
-                                        "Pending"),
-                              ),
-                              _statusButton(
-                                label: "กำลังตัด",
-                                isActive:
-                                    booking['status'] ==
-                                        "Cutting",
-                                color: Colors.blue,
-                                onTap: () =>
-                                    _changeStatus(index,
-                                        "Cutting"),
-                              ),
-                              _statusButton(
-                                label: "เสร็จแล้ว",
-                                isActive:
-                                    booking['status'] ==
-                                        "Done",
-                                color: Colors.green,
-                                onTap: () =>
-                                    _changeStatus(
-                                        index, "Done"),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                          onPressed: () => _confirmDelete(index),
+                        ),
+                      ],
                     ),
                   ),
                 );
               },
             ),
-    );
-  }
 
-  Widget _statusButton({
-    required String label,
-    required bool isActive,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return ElevatedButton(
-      onPressed: onTap,
-      style: ElevatedButton.styleFrom(
-        backgroundColor:
-            isActive ? color : Colors.grey.shade300,
-        foregroundColor:
-            isActive ? Colors.white : Colors.black54,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16),
+        child: ElevatedButton(
+          onPressed: _callNextQueue,
+          style: ElevatedButton.styleFrom(
+            minimumSize: const Size(double.infinity, 55),
+          ),
+          child: const Text(
+            "▶️ เรียกคิวถัดไป",
+            style: TextStyle(fontSize: 18),
+          ),
         ),
       ),
-      child: Text(label),
     );
   }
 }

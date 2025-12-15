@@ -57,6 +57,7 @@ class QueueManager {
       'name': name,
       'phone': phone,
       'time': time,
+      'status': 'waiting',
       'timestamp': DateTime.now(),
     });
   }

@@ -31,8 +31,11 @@ class AdminDashboard extends StatelessWidget {
                   CircleAvatar(
                     radius: 26,
                     backgroundColor: Color(0xFF4CAF93),
-                    child: Icon(Icons.admin_panel_settings,
-                        color: Colors.white, size: 30),
+                    child: Icon(
+                      Icons.admin_panel_settings,
+                      color: Colors.white,
+                      size: 30,
+                    ),
                   ),
                   SizedBox(width: 16),
                   Column(
@@ -67,7 +70,7 @@ class AdminDashboard extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // ---------- MENU 1 : ดูคิว ----------
+            // ---------- MENU : ดูคิว ----------
             _adminMenuCard(
               context: context,
               icon: Icons.list_alt,
@@ -81,26 +84,21 @@ class AdminDashboard extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // ---------- MENU 2 : จัดการคิว ----------
+            // ---------- MENU : จัดการคิว ----------
             _adminMenuCard(
               context: context,
               icon: Icons.edit_calendar,
               title: "จัดการคิว",
-              subtitle: "เพิ่ม / ลบ เวลา • ล้างคิว",
+              subtitle: "เรียกคิว • ลบคิว • จบวัน",
               color: const Color(0xFF3F7F6A),
               onTap: () {
-                Navigator.pushNamed(context, '/admin_manage');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("ฟีเจอร์จัดการคิวจะเพิ่มในขั้นถัดไป"),
-                  ),
-                );
+                Navigator.pushNamed(context, '/admin/manage');
               },
             ),
 
             const SizedBox(height: 16),
 
-            // ---------- MENU 3 : ตั้งค่า ----------
+            // ---------- MENU : ตั้งค่า ----------
             _adminMenuCard(
               context: context,
               icon: Icons.settings,
@@ -108,12 +106,7 @@ class AdminDashboard extends StatelessWidget {
               subtitle: "ตั้งค่าเวลาเปิดร้าน / ระบบ",
               color: const Color(0xFF2F5D50),
               onTap: () {
-                Navigator.pushNamed(context, '/admin_settings');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("ฟีเจอร์ตั้งค่าระบบจะเพิ่มในขั้นถัดไป"),
-                  ),
-                );
+                Navigator.pushNamed(context, '/admin/settings');
               },
             ),
           ],
@@ -122,7 +115,7 @@ class AdminDashboard extends StatelessWidget {
     );
   }
 
-  // ---------- Reusable Card ----------
+  // ---------- Reusable Menu Card ----------
   Widget _adminMenuCard({
     required BuildContext context,
     required IconData icon,
@@ -175,7 +168,7 @@ class AdminDashboard extends StatelessWidget {
                 Icons.arrow_forward_ios,
                 color: Colors.white70,
                 size: 18,
-              )
+              ),
             ],
           ),
         ),

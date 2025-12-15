@@ -25,11 +25,11 @@ class MyApp extends StatelessWidget {
         '/home': (_) => const HomeScreen(),
         '/booking': (_) => const BookingScreen(),
         '/queue': (_) => const QueueScreen(),
+
+        // --- Admin ---
         '/admin': (_) => const AdminDashboard(),
-        '/admin_manage': (_) =>
-            const AdminManageQueueScreen(), // 👈 เพิ่ม route ตรงนี้
-        '/admin-manage': (context) => const AdminManageQueueScreen(),
-        '/admin-settings': (context) => const AdminSettingsScreen(),
+        '/admin/manage': (_) => const AdminManageQueueScreen(),
+        '/admin/settings': (_) => const AdminSettingsScreen(),
       },
     );
   }
