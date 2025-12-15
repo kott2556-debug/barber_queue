@@ -1,30 +1,63 @@
 class QueueManager {
   static final QueueManager _instance = QueueManager._internal();
-
   factory QueueManager() => _instance;
-
   QueueManager._internal();
 
-  List<Map<String, String>> bookings = [];
-  // เวลาที่ Admin ตั้งเอง
+  // =====================
+  // SETTINGS
+  // =====================
+  String currentUserName = '';
+  String currentUserPhone = '';
+  
+  bool isQueueOpen = true;
+  int maxQueuePerDay = 10;
+
+  String openTime = "09:00";
+  String closeTime = "18:00";
+
+  // =====================
+  // AVAILABLE TIMES (แก้ error ตัวแดง)
+  // =====================
   List<String> availableTimes = [
-    "คิวที่ 1   เวลา  8.00",
-    "คิวที่ 2   เวลา  8.45",
-    "คิวที่ 3   เวลา  9.30",
-    "คิวที่ 4   เวลา  10.15",
-    "คิวที่ 5   เวลา  11.00",
-    "คิวที่ 6   เวลา  13.00",
-    "คิวที่ 7   เวลา  13.45",
-    "คิวที่ 8   เวลา  14.30",
-    "คิวที่ 8   เวลา  15.15",
-    "คิวที่ 10   เวลา 16.00",
+    "09:00",
+    "10:00",
+    "11:00",
+    "12:00",
+    "13:00",
+    "14:00",
+    "15:00",
+    "16:00",
+    "17:00",
+    "18:00",
   ];
-  // ฟังก์ชันให้ Admin ตั้งเวลาเอง (จำกัด 10 ช่อง)
-  void setAdminTimes(List<String> newTimes) {
-    availableTimes = newTimes.take(10).toList();
+
+  // =====================
+  // QUEUE DATA
+  // =====================
+  List<Map<String, dynamic>> bookings = [];
+
+  bool canBook() {
+    return isQueueOpen && bookings.length < maxQueuePerDay;
   }
 
-  void addBooking(String time) {
-    bookings.add({"time": time, "status": "Pending"});
+  // =====================
+  // ADD BOOKING (รองรับ booking_screen เดิม)
+  // =====================
+  void addBooking({
+    required String name,
+    required String phone,
+    required String time,
+  }) {
+    if (!canBook()) return;
+
+    // ให้เหลือแค่คิวล่าสุด
+    bookings.clear();
+
+    bookings.add({
+      'name': name,
+      'phone': phone,
+      'time': time,
+      'timestamp': DateTime.now(),
+    });
   }
 }

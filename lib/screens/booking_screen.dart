@@ -45,7 +45,13 @@ class _BookingScreenState extends State<BookingScreen> {
                     selectedTime = time;
                   });
 
-                  QueueManager().addBooking(time);
+                  final qm = QueueManager();
+
+                  QueueManager().addBooking(
+                    name: qm.currentUserName,
+                    phone: qm.currentUserPhone,
+                    time: selectedTime!,
+                  );
 
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
