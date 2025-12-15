@@ -23,7 +23,7 @@ class HomeScreen extends StatelessWidget {
               height: 70, // สูงขึ้น
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 139, 240, 211), // สีโทนอ่อน
+                  backgroundColor: const Color.fromARGB(255, 167, 233, 214), // สีโทนอ่อน
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24), // มน ๆ
                   ),
@@ -47,7 +47,7 @@ class HomeScreen extends StatelessWidget {
               height: 70, // สูงขึ้น
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 133, 231, 190), // สีโทนอ่อน
+                  backgroundColor: const Color.fromARGB(255, 155, 229, 198), // สีโทนอ่อน
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
                   ),
