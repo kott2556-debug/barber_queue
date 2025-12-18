@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/firestore_service.dart';
+
 
 class QueueManager extends ChangeNotifier {
   // --------------------
@@ -7,6 +9,8 @@ class QueueManager extends ChangeNotifier {
   static final QueueManager _instance = QueueManager._internal();
   factory QueueManager() => _instance;
   QueueManager._internal();
+
+  final FirestoreService _firestore = FirestoreService();
 
   // --------------------
   // ผู้ใช้ปัจจุบัน
@@ -61,21 +65,17 @@ class QueueManager extends ChangeNotifier {
   // --------------------
   // เพิ่มคิว (ลูกค้า)
   // --------------------
-  void addBooking({
-    required String name,
-    required String phone,
-    required String time,
-  }) {
-    _bookings.add({
-      'name': name,
-      'phone': phone,
-      'time': time,
-      'status': 'waiting', // waiting | serving | done
-      'createdAt': DateTime.now(),
-    });
-
-    notifyListeners();
-  }
+ Future<void> addBooking({
+  required String name,
+  required String phone,
+  required String time,
+}) async {
+  await _firestore.addBooking(
+    name: name,
+    phone: phone,
+    time: time,
+  );
+}
 
   // --------------------
   // Admin เรียกคิวถัดไป

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/queue_manager.dart';
+import '../services/firestore_service.dart';
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({super.key});
@@ -11,9 +12,12 @@ class BookingScreen extends StatefulWidget {
 class _BookingScreenState extends State<BookingScreen> {
   String? selectedTime;
 
+  final qm = QueueManager();
+  final firestore = FirestoreService();
+
   @override
   Widget build(BuildContext context) {
-    final times = QueueManager().availableTimes.take(10).toList();
+    final times = qm.availableTimes.take(10).toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F7F6),
@@ -23,8 +27,10 @@ class _BookingScreenState extends State<BookingScreen> {
         backgroundColor: const Color(0xFFE6F4EF),
         elevation: 0,
       ),
+
+      // ---------- BODY ----------
       body: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
         itemCount: times.length,
         itemBuilder: (context, index) {
           final time = times[index];
@@ -34,32 +40,16 @@ class _BookingScreenState extends State<BookingScreen> {
             padding: const EdgeInsets.only(bottom: 16),
             child: Material(
               elevation: isSelected ? 3 : 6,
-              shadowColor: Colors.black.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(24),
               color: isSelected ? const Color(0xFFDFF3EC) : Colors.white,
               child: InkWell(
                 borderRadius: BorderRadius.circular(24),
-                splashColor: const Color(0xFFBEE7D8).withValues(alpha: 0.4),
                 onTap: () {
                   setState(() {
                     selectedTime = time;
                   });
-
-                  if (selectedTime == null) return;
-
-                  QueueManager().addBooking(
-                    name: QueueManager().currentUserName!,
-                    phone: QueueManager().currentUserPhone!,
-                    time: selectedTime!,
-                  );
-
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('เลือกคิวเวลา $time แล้ว')),
-                  );
                 },
-
-                child: Container(
+                child: Padding(
                   padding: const EdgeInsets.symmetric(
                     vertical: 22,
                     horizontal: 20,
@@ -71,7 +61,6 @@ class _BookingScreenState extends State<BookingScreen> {
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF2F5D50),
                         ),
                       ),
                       const Spacer(),
@@ -84,7 +73,9 @@ class _BookingScreenState extends State<BookingScreen> {
                                 color: Color(0xFF4CAF93),
                                 size: 28,
                               )
-                            : const SizedBox(key: ValueKey('empty')),
+                            : const SizedBox(
+                                key: ValueKey('empty'),
+                              ),
                       ),
                     ],
                   ),
@@ -93,6 +84,54 @@ class _BookingScreenState extends State<BookingScreen> {
             ),
           );
         },
+      ),
+
+      // ---------- CONFIRM BUTTON ----------
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16),
+        child: ElevatedButton(
+          onPressed: selectedTime == null
+              ? null
+              : () async {
+                  // กันพลาด
+                  if (qm.currentUserName == null ||
+                      qm.currentUserPhone == null) {
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("กรุณา Login ใหม่")),
+                    );
+                    return;
+                  }
+
+                  // 1️⃣ เพิ่มเข้า local (แสดงผลทันที)
+                  qm.addBooking(
+                    name: qm.currentUserName!,
+                    phone: qm.currentUserPhone!,
+                    time: selectedTime!,
+                  );
+
+                  // 2️⃣ เพิ่มเข้า Firestore (ของจริง)
+                  await firestore.addBooking(
+                    name: qm.currentUserName!,
+                    phone: qm.currentUserPhone!,
+                    time: selectedTime!,
+                  );
+
+                  if (!mounted) return;
+                  Navigator.pushNamed(context, '/queue');
+                },
+          style: ElevatedButton.styleFrom(
+            minimumSize: const Size(double.infinity, 56),
+            backgroundColor: const Color(0xFF4CAF93),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+          child: const Text(
+            "ยืนยันจองคิว",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ),
       ),
     );
   }
