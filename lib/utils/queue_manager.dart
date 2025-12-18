@@ -1,76 +1,144 @@
-class QueueManager {
+import 'package:flutter/material.dart';
+
+class QueueManager extends ChangeNotifier {
+  // --------------------
+  // Singleton (ใช้ข้อมูลร่วมทั้งแอป)
+  // --------------------
   static final QueueManager _instance = QueueManager._internal();
   factory QueueManager() => _instance;
   QueueManager._internal();
 
   // --------------------
-  // ข้อมูลผู้ใช้ปัจจุบัน
+  // ผู้ใช้ปัจจุบัน
   // --------------------
-  String? currentUserName;
-  String? currentUserPhone;
+  String? _currentUserName;
+  String? _currentUserPhone;
 
-  void setCurrentUser({required String name, required String phone}) {
-    currentUserName = name;
-    currentUserPhone = phone;
+  String? get currentUserName => _currentUserName;
+  String? get currentUserPhone => _currentUserPhone;
+
+  void setCurrentUser({
+    required String name,
+    required String phone,
+  }) {
+    _currentUserName = name;
+    _currentUserPhone = phone;
+    notifyListeners();
   }
 
   // --------------------
-  // คิว
+  // เวลาที่เปิดให้จอง
   // --------------------
-  final List<Map<String, dynamic>> bookings = [];
-  List<String> get availableTimes => [
-    '09:00',
+  final List<String> _availableTimes = [
     '10:00',
+    '10:30',
     '11:00',
+    '11:30',
     '12:00',
     '13:00',
+    '13:30',
     '14:00',
+    '14:30',
     '15:00',
   ];
 
+  List<String> get availableTimes => _availableTimes;
+
+  // --------------------
+  // คิวทั้งหมด (Admin เห็นทั้งหมด)
+  // --------------------
+  final List<Map<String, dynamic>> _bookings = [];
+  int _currentIndex = -1;
+
+  List<Map<String, dynamic>> get bookings => _bookings;
+  int get currentIndex => _currentIndex;
+
+  Map<String, dynamic>? get currentQueue =>
+      (_currentIndex >= 0 && _currentIndex < _bookings.length)
+          ? _bookings[_currentIndex]
+          : null;
+
+  // --------------------
+  // เพิ่มคิว (ลูกค้า)
+  // --------------------
   void addBooking({
     required String name,
     required String phone,
     required String time,
   }) {
-    // ถ้าคนเดิมจองซ้ำ → ลบทิ้งแล้วใส่ใหม่ (เหลือ 1 บรรทัด)
-    bookings.removeWhere((b) => b['phone'] == phone);
-
-    bookings.add({
+    _bookings.add({
       'name': name,
       'phone': phone,
       'time': time,
-      'status': 'waiting', // waiting | serving
+      'status': 'waiting', // waiting | serving | done
       'createdAt': DateTime.now(),
     });
 
-    _sortQueue();
-  }
-
-  void _sortQueue() {
-    bookings.sort((a, b) => a['createdAt'].compareTo(b['createdAt']));
+    notifyListeners();
   }
 
   // --------------------
   // Admin เรียกคิวถัดไป
   // --------------------
   void callNextQueue() {
-    if (bookings.isEmpty) return;
+    if (_bookings.isEmpty) return;
 
-    // รีเซ็ตทุกคิวเป็น waiting
-    for (var b in bookings) {
-      b['status'] = 'waiting';
+    // ปิดคิวเก่า
+    if (_currentIndex >= 0 && _currentIndex < _bookings.length) {
+      _bookings[_currentIndex]['status'] = 'done';
     }
 
-    // คิวแรก = กำลังให้บริการ
-    bookings.first['status'] = 'serving';
+    _currentIndex++;
+
+    // เปิดคิวใหม่
+    if (_currentIndex < _bookings.length) {
+      _bookings[_currentIndex]['status'] = 'serving';
+    }
+
+    notifyListeners(); // 🔥 realtime ทุกหน้า
   }
 
+  // --------------------
+  // คิวที่กำลังให้บริการ (ทุกคน)
+  // --------------------
   Map<String, dynamic>? get servingQueue {
     try {
-      return bookings.firstWhere((b) => b['status'] == 'serving');
+      return _bookings.firstWhere(
+        (b) => b['status'] == 'serving',
+      );
     } catch (_) {
       return null;
     }
+  }
+
+  // --------------------
+  // 🔥 คิวของผู้ใช้ปัจจุบัน (ลูกค้าเห็นเฉพาะของตัวเอง)
+  // --------------------
+  List<Map<String, dynamic>> get myBookings {
+    if (_currentUserPhone == null) return [];
+
+    return _bookings
+        .where((b) => b['phone'] == _currentUserPhone)
+        .toList();
+  }
+
+  // คิวของฉันที่กำลังให้บริการ
+  Map<String, dynamic>? get myServingQueue {
+    try {
+      return myBookings.firstWhere(
+        (b) => b['status'] == 'serving',
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // --------------------
+  // ล้างคิวทั้งหมด (Admin)
+  // --------------------
+  void clearQueue() {
+    _bookings.clear();
+    _currentIndex = -1;
+    notifyListeners();
   }
 }

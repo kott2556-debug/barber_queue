@@ -2,37 +2,110 @@ import 'package:flutter/material.dart';
 import '../utils/queue_manager.dart';
 
 class QueueScreen extends StatelessWidget {
-   QueueScreen({super.key});
+  QueueScreen({super.key});
 
-  final qm = QueueManager();
+  final QueueManager qm = QueueManager();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("คิวของคุณ")),
-      body: qm.bookings.isEmpty
-          ? const Center(child: Text("ยังไม่มีคิว"))
-          : ListView.builder(
-              itemCount: qm.bookings.length,
-              itemBuilder: (context, index) {
-                final b = qm.bookings[index];
+      appBar: AppBar(
+        title: const Text("คิวของคุณ"),
+        centerTitle: true,
+      ),
 
-                return ListTile(
-                  leading: CircleAvatar(child: Text('${index + 1}')),
-                  title: Text(b['name']),
-                  subtitle: Text('เวลา ${b['time']}'),
-                  trailing: b['status'] == 'serving'
-                      ? const Text(
-                          "กำลังให้บริการ",
-                          style: TextStyle(
-                            color: Colors.green,
+      // 🔥 ฟัง realtime จาก QueueManager
+      body: AnimatedBuilder(
+        animation: qm,
+        builder: (context, _) {
+          // ไม่มีคิวของตัวเอง
+          if (qm.myBookings.isEmpty) {
+            return const Center(
+              child: Text(
+                "คุณยังไม่มีคิว",
+                style: TextStyle(fontSize: 18),
+              ),
+            );
+          }
+
+          return Column(
+            children: [
+              // --------------------
+              // แสดงสถานะถึงคิวแล้ว
+              // --------------------
+              if (qm.myServingQueue != null)
+                Container(
+                  margin: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    "🟢 ถึงคิวคุณแล้ว\nเวลา ${qm.myServingQueue!['time']}",
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
+              // --------------------
+              // รายการคิวของฉัน
+              // --------------------
+              Expanded(
+                child: ListView.builder(
+                  itemCount: qm.myBookings.length,
+                  itemBuilder: (context, index) {
+                    final b = qm.myBookings[index];
+
+                    final bool isServing = b['status'] == 'serving';
+                    final bool isDone = b['status'] == 'done';
+
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor:
+                              isServing ? Colors.green : Colors.grey.shade400,
+                          child: Text('${index + 1}'),
+                        ),
+                        title: Text(
+                          "เวลา ${b['time']}",
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                           ),
-                        )
-                      : const Text("รอคิว"),
-                );
-              },
-            ),
+                        ),
+                        subtitle: Text(
+                          isServing
+                              ? "กำลังให้บริการ"
+                              : isDone
+                                  ? "เสร็จแล้ว"
+                                  : "รอคิว",
+                          style: TextStyle(
+                            color: isServing
+                                ? Colors.green
+                                : isDone
+                                    ? Colors.grey
+                                    : Colors.orange,
+                            fontWeight: isServing
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 }
