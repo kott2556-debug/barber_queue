@@ -45,11 +45,11 @@ class _BookingScreenState extends State<BookingScreen> {
                     selectedTime = time;
                   });
 
-                  final qm = QueueManager();
+                  if (selectedTime == null) return;
 
                   QueueManager().addBooking(
-                    name: qm.currentUserName,
-                    phone: qm.currentUserPhone,
+                    name: QueueManager().currentUserName!,
+                    phone: QueueManager().currentUserPhone!,
                     time: selectedTime!,
                   );
 
@@ -58,6 +58,7 @@ class _BookingScreenState extends State<BookingScreen> {
                     SnackBar(content: Text('เลือกคิวเวลา $time แล้ว')),
                   );
                 },
+
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     vertical: 22,

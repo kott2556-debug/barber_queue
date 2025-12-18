@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../utils/queue_manager.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -54,6 +55,10 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     await _saveUser(name, phone);
+    QueueManager().setCurrentUser(
+      name: name,
+      phone: phone
+    );
     if (!mounted) return;
 
     // ---- เงื่อนไขเข้า Admin ----
@@ -81,7 +86,6 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-
             /// ---- ชื่อ ----
             isEditingName
                 ? TextField(
@@ -136,10 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                child: const Text(
-                  "เข้าใช้งาน",
-                  style: TextStyle(fontSize: 18),
-                ),
+                child: const Text("เข้าใช้งาน", style: TextStyle(fontSize: 18)),
               ),
             ),
           ],
@@ -160,16 +161,8 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       child: Row(
         children: [
-          Text(
-            "$label: ",
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontSize: 16),
-            ),
-          ),
+          Text("$label: ", style: const TextStyle(fontWeight: FontWeight.w600)),
+          Expanded(child: Text(value, style: const TextStyle(fontSize: 16))),
           const Icon(Icons.edit, size: 18, color: Colors.grey),
         ],
       ),

@@ -9,47 +9,29 @@ class AdminManageQueueScreen extends StatefulWidget {
       _AdminManageQueueScreenState();
 }
 
-class _AdminManageQueueScreenState extends State<AdminManageQueueScreen> {
+class _AdminManageQueueScreenState
+    extends State<AdminManageQueueScreen> {
   final qm = QueueManager();
-
-  // =====================
-  // เรียกคิวถัดไป
-  // =====================
-  void _callNextQueue() {
-    setState(() {
-      for (var booking in qm.bookings) {
-        booking['status'] = 'waiting';
-      }
-
-      if (qm.bookings.isNotEmpty) {
-        qm.bookings.first['status'] = 'serving';
-      }
-    });
-  }
 
   // =====================
   // แสดงสถานะคิว
   // =====================
   Widget _statusChip(String status) {
-    Color color;
-    String text;
-
-    switch (status) {
-      case 'serving':
-        color = Colors.green;
-        text = 'กำลังให้บริการ';
-        break;
-      default:
-        color = Colors.orange;
-        text = 'รอคิว';
+    if (status == 'serving') {
+      return const Chip(
+        label: Text(
+          "กำลังให้บริการ",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.green,
+      );
     }
-
-    return Chip(
+    return const Chip(
       label: Text(
-        text,
-        style: const TextStyle(color: Colors.white),
+        "รอคิว",
+        style: TextStyle(color: Colors.white),
       ),
-      backgroundColor: color,
+      backgroundColor: Colors.orange,
     );
   }
 
@@ -68,7 +50,9 @@ class _AdminManageQueueScreenState extends State<AdminManageQueueScreen> {
             child: const Text("ยกเลิก"),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
             onPressed: () {
               _deleteQueue(index);
               Navigator.pop(context);
@@ -101,7 +85,6 @@ class _AdminManageQueueScreenState extends State<AdminManageQueueScreen> {
         title: const Text("จัดการคิว"),
         centerTitle: true,
       ),
-
       body: qm.bookings.isEmpty
           ? const Center(
               child: Text(
@@ -138,7 +121,8 @@ class _AdminManageQueueScreenState extends State<AdminManageQueueScreen> {
                             Icons.delete,
                             color: Colors.red,
                           ),
-                          onPressed: () => _confirmDelete(index),
+                          onPressed: () =>
+                              _confirmDelete(index),
                         ),
                       ],
                     ),
@@ -146,14 +130,14 @@ class _AdminManageQueueScreenState extends State<AdminManageQueueScreen> {
                 );
               },
             ),
-
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: ElevatedButton(
-          onPressed: _callNextQueue,
-          style: ElevatedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 55),
-          ),
+          onPressed: () {
+            setState(() {
+              qm.callNextQueue();
+            });
+          },
           child: const Text(
             "▶️ เรียกคิวถัดไป",
             style: TextStyle(fontSize: 18),

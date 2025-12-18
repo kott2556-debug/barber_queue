@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
         '/': (_) => const LoginScreen(),
         '/home': (_) => const HomeScreen(),
         '/booking': (_) => const BookingScreen(),
-        '/queue': (_) => const QueueScreen(),
+        '/queue': (_) =>  QueueScreen(),
 
         // --- Admin ---
         '/admin': (_) => const AdminDashboard(),
