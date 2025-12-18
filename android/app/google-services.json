@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "537573740298",
+    "project_id": "baberqueue",
+    "storage_bucket": "baberqueue.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:537573740298:android:c29386c46659a3e25f34f3",
+        "android_client_info": {
+          "package_name": "com.example.barber_queue"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-wfofJ_u4hOZrB26Wbf2ixg9-s_z3z7Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
