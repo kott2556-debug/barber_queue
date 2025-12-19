@@ -73,9 +73,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                 color: Color(0xFF4CAF93),
                                 size: 28,
                               )
-                            : const SizedBox(
-                                key: ValueKey('empty'),
-                              ),
+                            : const SizedBox(key: ValueKey('empty')),
                       ),
                     ],
                   ),
@@ -90,36 +88,25 @@ class _BookingScreenState extends State<BookingScreen> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: ElevatedButton(
-          onPressed: selectedTime == null
-              ? null
-              : () async {
-                  // กันพลาด
-                  if (qm.currentUserName == null ||
-                      qm.currentUserPhone == null) {
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("กรุณา Login ใหม่")),
-                    );
-                    return;
-                  }
+          onPressed: () async {
+            if (qm.currentUserName == null || qm.currentUserPhone == null) {
+              if (!mounted) return;
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text("กรุณา Login ใหม่")));
+              return;
+            }
 
-                  // 1️⃣ เพิ่มเข้า local (แสดงผลทันที)
-                  qm.addBooking(
-                    name: qm.currentUserName!,
-                    phone: qm.currentUserPhone!,
-                    time: selectedTime!,
-                  );
+            // เขียนเข้า Firestore
+            await FirestoreService().addBooking(
+              name: qm.currentUserName!,
+              phone: qm.currentUserPhone!,
+              time: selectedTime!,
+            );
 
-                  // 2️⃣ เพิ่มเข้า Firestore (ของจริง)
-                  await firestore.addBooking(
-                    name: qm.currentUserName!,
-                    phone: qm.currentUserPhone!,
-                    time: selectedTime!,
-                  );
-
-                  if (!mounted) return;
-                  Navigator.pushNamed(context, '/queue');
-                },
+            if (!mounted) return;
+            Navigator.pushNamed(context, '/queue');
+          },
           style: ElevatedButton.styleFrom(
             minimumSize: const Size(double.infinity, 56),
             backgroundColor: const Color(0xFF4CAF93),

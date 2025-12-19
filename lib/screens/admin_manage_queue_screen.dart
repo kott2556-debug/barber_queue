@@ -1,148 +1,103 @@
 import 'package:flutter/material.dart';
-import '../utils/queue_manager.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../services/firestore_service.dart';
 
-class AdminManageQueueScreen extends StatefulWidget {
-  const AdminManageQueueScreen({super.key});
+class AdminManageQueueScreen extends StatelessWidget {
+  AdminManageQueueScreen({super.key});
 
-  @override
-  State<AdminManageQueueScreen> createState() =>
-      _AdminManageQueueScreenState();
-}
+  final FirestoreService firestoreService = FirestoreService();
 
-class _AdminManageQueueScreenState
-    extends State<AdminManageQueueScreen> {
-  final qm = QueueManager();
-
-  // =====================
-  // แสดงสถานะคิว
-  // =====================
-  Widget _statusChip(String status) {
-    if (status == 'serving') {
-      return const Chip(
-        label: Text(
-          "กำลังให้บริการ",
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.green,
-      );
-    }
-    return const Chip(
-      label: Text(
-        "รอคิว",
-        style: TextStyle(color: Colors.white),
-      ),
-      backgroundColor: Colors.orange,
-    );
-  }
-
-  // =====================
-  // ยืนยันลบคิว
-  // =====================
-  void _confirmDelete(int index) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("ยืนยันการลบคิว"),
-        content: const Text("ลูกค้าไม่มาใช่หรือไม่?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("ยกเลิก"),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
-            onPressed: () {
-              _deleteQueue(index);
-              Navigator.pop(context);
-            },
-            child: const Text("ลบคิว"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // =====================
-  // ลบคิวจริง
-  // =====================
-  void _deleteQueue(int index) {
-    setState(() {
-      if (index >= 0 && index < qm.bookings.length) {
-        qm.bookings.removeAt(index);
-      }
-    });
-  }
-
-  // =====================
-  // UI
-  // =====================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("จัดการคิว"),
+        title: const Text('จัดการคิว (Admin)'),
         centerTitle: true,
+        backgroundColor: const Color(0xFF4CAF93),
       ),
-      body: qm.bookings.isEmpty
-          ? const Center(
-              child: Text(
-                "ยังไม่มีคิว",
-                style: TextStyle(fontSize: 18),
-              ),
-            )
-          : ListView.builder(
-              itemCount: qm.bookings.length,
-              itemBuilder: (context, index) {
-                final booking = qm.bookings[index];
-                final status = booking['status'];
+      body: StreamBuilder<QuerySnapshot>(
+        stream: firestoreService.streamBookings(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-                return Card(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('ยังไม่มีคิว'));
+          }
+
+          final docs = snapshot.data!.docs;
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              final doc = docs[index];
+              final data = doc.data() as Map<String, dynamic>;
+
+              final status = data['status'] ?? 'waiting';
+
+              Color statusColor;
+              String statusText;
+
+              switch (status) {
+                case 'serving':
+                  statusColor = Colors.green;
+                  statusText = 'กำลังให้บริการ';
+                  break;
+                case 'done':
+                  statusColor = Colors.grey;
+                  statusText = 'เสร็จแล้ว';
+                  break;
+                default:
+                  statusColor = Colors.orange;
+                  statusText = 'รอคิว';
+              }
+
+              return Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: statusColor,
+                    child: Text('${index + 1}'),
                   ),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      child: Text('${index + 1}'),
-                    ),
-                    title: Text(booking['name']),
-                    subtitle: Text(
-                      "เบอร์: ${booking['phone']} | เวลา: ${booking['time']}",
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _statusChip(status),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.delete,
-                            color: Colors.red,
-                          ),
-                          onPressed: () =>
-                              _confirmDelete(index),
+                  title: Text(data['name'] ?? '-'),
+                  subtitle: Text('เวลา ${data['time']}'),
+                  trailing: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        statusText,
+                        style: TextStyle(
+                          color: statusColor,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ],
-                    ),
+                      ),
+                      if (status == 'waiting')
+                        TextButton(
+                          onPressed: () async {
+                            await firestoreService.callNextQueue(doc.id);
+                          },
+                          child: const Text('เรียกคิว'),
+                        ),
+                      if (status == 'serving')
+                        TextButton(
+                          onPressed: () async {
+                            await firestoreService.finishQueue(doc.id);
+                          },
+                          child: const Text('เสร็จแล้ว'),
+                        ),
+                    ],
                   ),
-                );
-              },
-            ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ElevatedButton(
-          onPressed: () {
-            setState(() {
-              qm.callNextQueue();
-            });
-          },
-          child: const Text(
-            "▶️ เรียกคิวถัดไป",
-            style: TextStyle(fontSize: 18),
-          ),
-        ),
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
