@@ -12,8 +12,10 @@ class BookingScreen extends StatefulWidget {
 class _BookingScreenState extends State<BookingScreen> {
   String? selectedTime;
 
-  final qm = QueueManager();
-  final firestore = FirestoreService();
+  final QueueManager qm = QueueManager();
+  final FirestoreService firestore = FirestoreService();
+
+  bool _isSubmitting = false; // ✅ กันกดซ้ำ
 
   @override
   Widget build(BuildContext context) {
@@ -28,13 +30,13 @@ class _BookingScreenState extends State<BookingScreen> {
         elevation: 0,
       ),
 
-      // ---------- BODY ----------
+      // ================= BODY =================
       body: ListView.builder(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
         itemCount: times.length,
         itemBuilder: (context, index) {
           final time = times[index];
-          final isSelected = selectedTime == time;
+          final bool isSelected = selectedTime == time;
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 16),
@@ -44,11 +46,13 @@ class _BookingScreenState extends State<BookingScreen> {
               color: isSelected ? const Color(0xFFDFF3EC) : Colors.white,
               child: InkWell(
                 borderRadius: BorderRadius.circular(24),
-                onTap: () {
-                  setState(() {
-                    selectedTime = time;
-                  });
-                },
+                onTap: _isSubmitting
+                    ? null
+                    : () {
+                        setState(() {
+                          selectedTime = time;
+                        });
+                      },
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     vertical: 22,
@@ -84,29 +88,68 @@ class _BookingScreenState extends State<BookingScreen> {
         },
       ),
 
-      // ---------- CONFIRM BUTTON ----------
+      // ================= CONFIRM BUTTON =================
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: ElevatedButton(
-          onPressed: () async {
-            if (qm.currentUserName == null || qm.currentUserPhone == null) {
-              if (!mounted) return;
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text("กรุณา Login ใหม่")));
-              return;
-            }
+          onPressed: (selectedTime == null || _isSubmitting)
+              ? null
+              : () async {
+                  if (_isSubmitting) return;
 
-            // เขียนเข้า Firestore
-            await FirestoreService().addBooking(
-              name: qm.currentUserName!,
-              phone: qm.currentUserPhone!,
-              time: selectedTime!,
-            );
+                  setState(() {
+                    _isSubmitting = true; // 🔒 ปิดปุ่มทันที
+                  });
 
-            if (!mounted) return;
-            Navigator.pushNamed(context, '/queue');
-          },
+                  final ctx = context;
+
+                  try {
+                    // 🔐 เช็ค user
+                    if (qm.currentUserName == null ||
+                        qm.currentUserPhone == null) {
+                      if (!ctx.mounted) return;
+                      ScaffoldMessenger.of(ctx).showSnackBar(
+                        const SnackBar(content: Text("กรุณา Login ใหม่")),
+                      );
+                      setState(() => _isSubmitting = false);
+                      return;
+                    }
+
+                    // 🔄 กันจองซ้ำ
+                    final hasQueue = await firestore.hasActiveBooking(
+                      qm.currentUserPhone!,
+                    );
+
+                    if (hasQueue) {
+                      if (!ctx.mounted) return;
+                      ScaffoldMessenger.of(ctx).showSnackBar(
+                        const SnackBar(content: Text("คุณมีคิวอยู่แล้ว")),
+                      );
+                      setState(() => _isSubmitting = false);
+                      return;
+                    }
+
+                    // 🔥 เพิ่มข้อมูลเข้า Firestore
+                    await firestore.addBooking(
+                      name: qm.currentUserName!,
+                      phone: qm.currentUserPhone!,
+                      time: selectedTime!,
+                    );
+
+                    if (!ctx.mounted) return;
+
+                    // ✅ ไปหน้าคิว (Back ไม่ย้อนกลับ)
+                    Navigator.pushReplacementNamed(ctx, '/queue');
+                  } catch (e) {
+                    if (!ctx.mounted) return;
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      const SnackBar(
+                        content: Text("เกิดข้อผิดพลาด กรุณาลองใหม่"),
+                      ),
+                    );
+                    setState(() => _isSubmitting = false);
+                  }
+                },
           style: ElevatedButton.styleFrom(
             minimumSize: const Size(double.infinity, 56),
             backgroundColor: const Color(0xFF4CAF93),
@@ -114,10 +157,19 @@ class _BookingScreenState extends State<BookingScreen> {
               borderRadius: BorderRadius.circular(20),
             ),
           ),
-          child: const Text(
-            "ยืนยันจองคิว",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
+          child: _isSubmitting
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    color: Colors.white,
+                  ),
+                )
+              : const Text(
+                  "ยืนยันจองคิว",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
         ),
       ),
     );

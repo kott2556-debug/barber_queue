@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
 
         // --- Admin ---
         '/admin': (_) => const AdminDashboard(),
-        '/admin/manage': (_) =>  AdminManageQueueScreen(),
+        '/admin/manage': (_) => AdminManageQueueScreen(),
         '/admin/settings': (_) => const AdminSettingsScreen(),
       },
     );

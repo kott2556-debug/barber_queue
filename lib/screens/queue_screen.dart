@@ -1,69 +1,119 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/firestore_service.dart';
+import '../utils/queue_manager.dart';
 
 class QueueScreen extends StatelessWidget {
   QueueScreen({super.key});
 
-  final firestore = FirestoreService();
+  final FirestoreService firestoreService = FirestoreService();
+  final QueueManager qm = QueueManager();
 
   @override
   Widget build(BuildContext context) {
+    final userPhone = qm.currentUserPhone;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("คิวทั้งหมด"),
+        title: const Text('คิวของคุณ'),
         centerTitle: true,
+        backgroundColor: const Color(0xFF4CAF93),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: firestore.streamBookings(),
-        builder: (context, snapshot) {
-          // กำลังโหลด
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: userPhone == null
+          ? const Center(child: Text('ไม่พบข้อมูลผู้ใช้'))
+          : StreamBuilder<QuerySnapshot>(
+              stream: firestoreService.streamBookings(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          // ไม่มีข้อมูล
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("ยังไม่มีคิว"));
-          }
+                if (!snapshot.hasData) {
+                  return const Center(child: Text('ไม่พบข้อมูลคิว'));
+                }
 
-          final docs = snapshot.data!.docs;
+                // 🔥 กรองเฉพาะคิวของลูกค้าคนนี้
+                final userQueues = snapshot.data!.docs.where((doc) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  return data['phone'] == userPhone;
+                }).toList();
 
-          return ListView.builder(
-            itemCount: docs.length,
-            itemBuilder: (context, index) {
-              final data = docs[index].data() as Map<String, dynamic>;
+                if (userQueues.isEmpty) {
+                  return const Center(child: Text('คุณยังไม่มีคิว'));
+                }
 
-              final name = data['name'] ?? '-';
-              final time = data['time'] ?? '-';
-              final status = data['status'] ?? 'waiting';
+                // แสดงเฉพาะคิวล่าสุด
+                final doc = userQueues.last;
+                final data = doc.data() as Map<String, dynamic>;
+                final status = data['status'];
 
-              return Card(
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    child: Text('${index + 1}'),
-                  ),
-                  title: Text(name),
-                  subtitle: Text('เวลา $time'),
-                  trailing: status == 'serving'
-                      ? const Text(
-                          "กำลังให้บริการ",
-                          style: TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
+                Color statusColor;
+                String statusText;
+
+                switch (status) {
+                  case 'serving':
+                    statusColor = Colors.green;
+                    statusText = 'กำลังให้บริการ';
+                    break;
+                  case 'done':
+                    statusColor = Colors.grey;
+                    statusText = 'เสร็จแล้ว';
+                    break;
+                  default:
+                    statusColor = Colors.orange;
+                    statusText = 'รอคิว';
+                }
+
+                return Center(
+                  child: Card(
+                    elevation: 6,
+                    margin: const EdgeInsets.all(20),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            data['name'] ?? '-',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        )
-                      : const Text("รอคิว"),
-                ),
-              );
-            },
-          );
-        },
-      ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'เวลา ${data['time']}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(height: 20),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 10,
+                              horizontal: 20,
+                            ),
+                            decoration: BoxDecoration(
+                              color: statusColor.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              statusText,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: statusColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
     );
   }
 }
