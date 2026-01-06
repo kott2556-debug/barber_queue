@@ -130,7 +130,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
                     final message = e.toString().contains('USER_ALREADY_HAS_QUEUE')
                         ? 'คุณมีคิวอยู่แล้ว'
-                        : 'เกิดข้อผิดพลาด กรุณาลองใหม่';
+                        : 'คุณจองคิวแล้ว';
 
                     ScaffoldMessenger.of(ctx).showSnackBar(
                       SnackBar(content: Text(message)),
