@@ -15,7 +15,7 @@ class _BookingScreenState extends State<BookingScreen> {
   final QueueManager qm = QueueManager();
   final FirestoreService firestore = FirestoreService();
 
-  bool _isSubmitting = false; // ✅ กันกดซ้ำ
+  bool _isSubmitting = false; // 🔒 กันกดซ้ำ
 
   @override
   Widget build(BuildContext context) {
@@ -97,40 +97,25 @@ class _BookingScreenState extends State<BookingScreen> {
               : () async {
                   if (_isSubmitting) return;
 
-                  setState(() {
-                    _isSubmitting = true; // 🔒 ปิดปุ่มทันที
-                  });
+                  setState(() => _isSubmitting = true);
 
                   final ctx = context;
 
-                  try {
-                    // 🔐 เช็ค user
-                    if (qm.currentUserName == null ||
-                        qm.currentUserPhone == null) {
-                      if (!ctx.mounted) return;
+                  // 🔐 ตรวจ user
+                  if (qm.currentUserName == null ||
+                      qm.currentUserPhone == null) {
+                    if (ctx.mounted) {
                       ScaffoldMessenger.of(ctx).showSnackBar(
                         const SnackBar(content: Text("กรุณา Login ใหม่")),
                       );
-                      setState(() => _isSubmitting = false);
-                      return;
                     }
+                    setState(() => _isSubmitting = false);
+                    return;
+                  }
 
-                    // 🔄 กันจองซ้ำ
-                    final hasQueue = await firestore.hasActiveBooking(
-                      qm.currentUserPhone!,
-                    );
-
-                    if (hasQueue) {
-                      if (!ctx.mounted) return;
-                      ScaffoldMessenger.of(ctx).showSnackBar(
-                        const SnackBar(content: Text("คุณมีคิวอยู่แล้ว")),
-                      );
-                      setState(() => _isSubmitting = false);
-                      return;
-                    }
-
-                    // 🔥 เพิ่มข้อมูลเข้า Firestore
-                    await firestore.addBooking(
+                  try {
+                    // 🔥 กันซ้ำระดับ Firestore (Transaction)
+                    await firestore.addBookingTransaction(
                       name: qm.currentUserName!,
                       phone: qm.currentUserPhone!,
                       time: selectedTime!,
@@ -138,15 +123,19 @@ class _BookingScreenState extends State<BookingScreen> {
 
                     if (!ctx.mounted) return;
 
-                    // ✅ ไปหน้าคิว (Back ไม่ย้อนกลับ)
+                    // ✅ ไปหน้าคิว (Back จะไม่ย้อนกลับ)
                     Navigator.pushReplacementNamed(ctx, '/queue');
                   } catch (e) {
                     if (!ctx.mounted) return;
+
+                    final message = e.toString().contains('USER_ALREADY_HAS_QUEUE')
+                        ? 'คุณมีคิวอยู่แล้ว'
+                        : 'เกิดข้อผิดพลาด กรุณาลองใหม่';
+
                     ScaffoldMessenger.of(ctx).showSnackBar(
-                      const SnackBar(
-                        content: Text("เกิดข้อผิดพลาด กรุณาลองใหม่"),
-                      ),
+                      SnackBar(content: Text(message)),
                     );
+
                     setState(() => _isSubmitting = false);
                   }
                 },

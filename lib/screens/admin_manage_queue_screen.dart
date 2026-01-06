@@ -36,6 +36,7 @@ class AdminManageQueueScreen extends StatelessWidget {
               final data = doc.data() as Map<String, dynamic>;
 
               final status = data['status'] ?? 'waiting';
+              final phone = data['phone']; // ✅ ใช้ตอน finishQueue
 
               Color statusColor;
               String statusText;
@@ -65,7 +66,7 @@ class AdminManageQueueScreen extends StatelessWidget {
                     child: Text('${index + 1}'),
                   ),
                   title: Text(data['name'] ?? '-'),
-                  subtitle: Text('เวลา ${data['time']}'),
+                  subtitle: Text('เวลา ${data['time'] ?? '-'}'),
                   trailing: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -86,9 +87,14 @@ class AdminManageQueueScreen extends StatelessWidget {
                         ),
                       if (status == 'serving')
                         TextButton(
-                          onPressed: () async {
-                            await firestoreService.finishQueue(doc.id);
-                          },
+                          onPressed: phone == null
+                              ? null
+                              : () async {
+                                  await firestoreService.finishQueue(
+                                    doc.id,
+                                    phone,
+                                  );
+                                },
                           child: const Text('เสร็จแล้ว'),
                         ),
                     ],

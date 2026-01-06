@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/firestore_service.dart';
 
-
 class QueueManager extends ChangeNotifier {
   // --------------------
   // Singleton (ใช้ข้อมูลร่วมทั้งแอป)
@@ -21,10 +20,7 @@ class QueueManager extends ChangeNotifier {
   String? get currentUserName => _currentUserName;
   String? get currentUserPhone => _currentUserPhone;
 
-  void setCurrentUser({
-    required String name,
-    required String phone,
-  }) {
+  void setCurrentUser({required String name, required String phone}) {
     _currentUserName = name;
     _currentUserPhone = phone;
     notifyListeners();
@@ -59,18 +55,18 @@ class QueueManager extends ChangeNotifier {
 
   Map<String, dynamic>? get currentQueue =>
       (_currentIndex >= 0 && _currentIndex < _bookings.length)
-          ? _bookings[_currentIndex]
-          : null;
+      ? _bookings[_currentIndex]
+      : null;
 
   // --------------------
   // เพิ่มคิว (ลูกค้า)
   // --------------------
- Future<void> addBooking({
+  Future<void> addBooking({
   required String name,
   required String phone,
   required String time,
 }) async {
-  await _firestore.addBooking(
+  await _firestore.addBookingTransaction(
     name: name,
     phone: phone,
     time: time,
@@ -103,9 +99,7 @@ class QueueManager extends ChangeNotifier {
   // --------------------
   Map<String, dynamic>? get servingQueue {
     try {
-      return _bookings.firstWhere(
-        (b) => b['status'] == 'serving',
-      );
+      return _bookings.firstWhere((b) => b['status'] == 'serving');
     } catch (_) {
       return null;
     }
@@ -117,17 +111,13 @@ class QueueManager extends ChangeNotifier {
   List<Map<String, dynamic>> get myBookings {
     if (_currentUserPhone == null) return [];
 
-    return _bookings
-        .where((b) => b['phone'] == _currentUserPhone)
-        .toList();
+    return _bookings.where((b) => b['phone'] == _currentUserPhone).toList();
   }
 
   // คิวของฉันที่กำลังให้บริการ
   Map<String, dynamic>? get myServingQueue {
     try {
-      return myBookings.firstWhere(
-        (b) => b['status'] == 'serving',
-      );
+      return myBookings.firstWhere((b) => b['status'] == 'serving');
     } catch (_) {
       return null;
     }

@@ -3,73 +3,69 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-    // =========================
-  // 👤 ลูกค้า : เช็คว่ามีคิวค้างอยู่ไหม
-  // =========================
-  Future<bool> hasActiveBooking(String phone) async {
-    final snapshot = await _db
-        .collection('bookings')
-        .where('phone', isEqualTo: phone)
-        .where('status', whereIn: ['waiting', 'serving'])
-        .limit(1)
-        .get();
-
-    return snapshot.docs.isNotEmpty;
-  }
-
-
-  // =========================
-  // 👤 ลูกค้า : เพิ่มคิว
-  // =========================
-  Future<void> addBooking({
+  // ==================================================
+  // 🔐 TRANSACTION กันจองซ้ำ (ระดับ Firestore จริง)
+  // ==================================================
+  Future<void> addBookingTransaction({
     required String name,
     required String phone,
     required String time,
   }) async {
-    await _db.collection('bookings').add({
-      'name': name,
-      'phone': phone,
-      'time': time,
-      'status': 'waiting', // waiting | serving | done
-      'createdAt': FieldValue.serverTimestamp(),
+    final activeRef = _db.collection('active_bookings').doc(phone);
+    final bookingRef = _db.collection('bookings').doc();
+
+    await _db.runTransaction((transaction) async {
+      final activeSnap = await transaction.get(activeRef);
+
+      // ❌ ถ้ามีคิวอยู่แล้ว
+      if (activeSnap.exists) {
+        throw Exception('USER_ALREADY_HAS_QUEUE');
+      }
+
+      // ✅ สร้างคิว
+      transaction.set(bookingRef, {
+        'name': name,
+        'phone': phone,
+        'time': time,
+        'status': 'waiting',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      // ✅ lock เบอร์นี้ไว้
+      transaction.set(activeRef, {
+        'bookingId': bookingRef.id,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
     });
   }
 
-  // =========================
-  // 🔄 Admin / ลูกค้า : ดูคิว realtime
-  // =========================
-  Stream<QuerySnapshot<Map<String, dynamic>>> streamBookings() {
-    return _db
-        .collection('bookings')
-        .orderBy('createdAt', descending: false)
-        .snapshots();
-  }
-
-  // =========================
-  // 🧑‍💼 Admin : เรียกคิวถัดไป
-  // =========================
+  // ===============================
+  // 🧑‍💼 Admin: เรียกคิว
+  // ===============================
   Future<void> callNextQueue(String docId) async {
     await _db.collection('bookings').doc(docId).update({
       'status': 'serving',
     });
   }
 
-  // =========================
-  // 🧑‍💼 Admin : ปิดคิว
-  // =========================
-  Future<void> finishQueue(String docId) async {
+  // ===============================
+  // 🧑‍💼 Admin: ปิดคิว (ปลด lock)
+  // ===============================
+  Future<void> finishQueue(String docId, String phone) async {
     await _db.collection('bookings').doc(docId).update({
       'status': 'done',
     });
+
+    await _db.collection('active_bookings').doc(phone).delete();
   }
 
-  // =========================
-  // 🧑‍💼 Admin : ล้างคิวทั้งหมด
-  // =========================
-  Future<void> clearAllQueues() async {
-    final snapshot = await _db.collection('bookings').get();
-    for (final doc in snapshot.docs) {
-      await doc.reference.delete();
-    }
+  // ===============================
+  // 🔄 realtime (Admin)
+  // ===============================
+  Stream<QuerySnapshot> streamBookings() {
+    return _db
+        .collection('bookings')
+        .orderBy('createdAt')
+        .snapshots();
   }
 }
