@@ -45,6 +45,33 @@ class QueueManager extends ChangeNotifier {
   List<String> get availableTimes => _availableTimes;
 
   // --------------------
+  // ฟังก์ชันใหม่: ตั้งค่าเวลาคิว (แทนที่เวลาเดิม)
+  // --------------------
+  void setAvailableTimes(List<String> times) {
+    _availableTimes.clear();
+    _availableTimes.addAll(times);
+    notifyListeners();
+  }
+
+  // --------------------
+  // ฟังก์ชันใหม่: โหลดเวลาที่ตั้งไว้
+  // --------------------
+  List<String> loadAvailableTimes() {
+    return List.from(_availableTimes);
+  }
+
+  // --------------------
+  // ฟิลด์ใหม่: เปิด/ปิดรับคิว
+  // --------------------
+  bool _isOpenForBooking = true; // true = เปิดรับคิว, false = ปิดรับคิว
+  bool get isOpenForBooking => _isOpenForBooking;
+
+  void setOpenForBooking(bool open) {
+    _isOpenForBooking = open;
+    notifyListeners(); // 🔥 อัปเดตทุกหน้าที่ listen QueueManager
+  }
+
+  // --------------------
   // คิวทั้งหมด (Admin เห็นทั้งหมด)
   // --------------------
   final List<Map<String, dynamic>> _bookings = [];
@@ -55,23 +82,23 @@ class QueueManager extends ChangeNotifier {
 
   Map<String, dynamic>? get currentQueue =>
       (_currentIndex >= 0 && _currentIndex < _bookings.length)
-      ? _bookings[_currentIndex]
-      : null;
+          ? _bookings[_currentIndex]
+          : null;
 
   // --------------------
   // เพิ่มคิว (ลูกค้า)
   // --------------------
   Future<void> addBooking({
-  required String name,
-  required String phone,
-  required String time,
-}) async {
-  await _firestore.addBookingTransaction(
-    name: name,
-    phone: phone,
-    time: time,
-  );
-}
+    required String name,
+    required String phone,
+    required String time,
+  }) async {
+    await _firestore.addBookingTransaction(
+      name: name,
+      phone: phone,
+      time: time,
+    );
+  }
 
   // --------------------
   // Admin เรียกคิวถัดไป
