@@ -17,9 +17,7 @@ import 'screens/admin_queue_screen.dart'; // ✅ เพิ่มอันนี�
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -33,19 +31,17 @@ class MyApp extends StatelessWidget {
       title: 'Barber Queue',
       initialRoute: '/',
       routes: {
-  // ---------- USER ----------
-  '/': (_) => const LoginScreen(),
-  '/home': (_) => const HomeScreen(),
-  '/booking': (_) => const BookingScreen(),
-  '/queue': (_) => QueueScreen(), // 👤 คิวของลูกค้า
-
-  // ---------- ADMIN ----------
-  '/admin': (_) => const AdminDashboard(),
-  '/admin/queue': (_) => const AdminQueueScreen(),
-  '/admin/manage': (_) => AdminManageQueueScreen(),
-  '/admin/settings': (_) => const AdminSettingsScreen(),
-},
-
+        // ---------- USER ----------
+        '/': (_) => const LoginScreen(),
+        '/home': (_) => const HomeScreen(),
+        '/booking': (_) => const BookingScreen(),
+        '/queue': (_) => QueueScreen(), // 👤 คิวของลูกค้า
+        // ---------- ADMIN ----------
+        '/admin': (_) => const AdminDashboard(),
+        '/admin/queue': (_) => const AdminQueueScreen(),
+        '/admin/manage': (_) => AdminManageQueueScreen(),
+        '/admin/settings': (_) => const AdminSettingsScreen(),
+      },
     );
   }
 }

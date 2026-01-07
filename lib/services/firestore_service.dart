@@ -43,18 +43,14 @@ class FirestoreService {
   // 🧑‍💼 Admin: เรียกคิว
   // ===============================
   Future<void> callNextQueue(String docId) async {
-    await _db.collection('bookings').doc(docId).update({
-      'status': 'serving',
-    });
+    await _db.collection('bookings').doc(docId).update({'status': 'serving'});
   }
 
   // ===============================
   // 🧑‍💼 Admin: ปิดคิว (ปลด lock)
   // ===============================
   Future<void> finishQueue(String docId, String phone) async {
-    await _db.collection('bookings').doc(docId).update({
-      'status': 'done',
-    });
+    await _db.collection('bookings').doc(docId).update({'status': 'done'});
 
     await _db.collection('active_bookings').doc(phone).delete();
   }
@@ -63,9 +59,20 @@ class FirestoreService {
   // 🔄 realtime (Admin)
   // ===============================
   Stream<QuerySnapshot> streamBookings() {
+    return _db.collection('bookings').orderBy('createdAt').snapshots();
+  }
+
+  // ==================================================
+  // 🔄 realtime เวลาที่ถูกจอง (ลูกค้า)
+  // ==================================================
+  Stream<List<String>> streamBookedTimes() {
     return _db
         .collection('bookings')
-        .orderBy('createdAt')
-        .snapshots();
+        .where('status', whereIn: ['waiting', 'serving'])
+        .snapshots()
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => doc['time'] as String).toList(),
+        );
   }
 }
