@@ -33,18 +33,19 @@ class MyApp extends StatelessWidget {
       title: 'Barber Queue',
       initialRoute: '/',
       routes: {
-        // ---------- USER ----------
-        '/': (_) => const LoginScreen(),
-        '/home': (_) => const HomeScreen(),
-        '/booking': (_) => const BookingScreen(),
-        '/my-queue': (_) => QueueScreen(), // 👤 คิวของลูกค้า
+  // ---------- USER ----------
+  '/': (_) => const LoginScreen(),
+  '/home': (_) => const HomeScreen(),
+  '/booking': (_) => const BookingScreen(),
+  '/queue': (_) => QueueScreen(), // 👤 คิวของลูกค้า
 
-        // ---------- ADMIN ----------
-        '/admin': (_) => const AdminDashboard(),
-        '/queue': (_) => const AdminQueueScreen(), // 👑 ดูคิวทั้งหมด
-        '/admin/manage': (_) => AdminManageQueueScreen(),
-        '/admin/settings': (_) => const AdminSettingsScreen(),
-      },
+  // ---------- ADMIN ----------
+  '/admin': (_) => const AdminDashboard(),
+  '/admin/queue': (_) => const AdminQueueScreen(),
+  '/admin/manage': (_) => AdminManageQueueScreen(),
+  '/admin/settings': (_) => const AdminSettingsScreen(),
+},
+
     );
   }
 }

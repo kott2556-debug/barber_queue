@@ -78,7 +78,7 @@ class AdminDashboard extends StatelessWidget {
               subtitle: "ดูรายการจองของลูกค้าทั้งหมด",
               color: const Color(0xFF4CAF93),
               onTap: () {
-                Navigator.pushNamed(context, '/queue');
+                Navigator.pushNamed(context, '/admin/queue');
               },
             ),
 
