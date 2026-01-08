@@ -11,7 +11,7 @@ class AdminManageQueueScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('จัดการคิว (Admin)'),
+        title: const Text('จัดการคิว Admin'),
         centerTitle: true,
         backgroundColor: const Color(0xFF4CAF93),
       ),

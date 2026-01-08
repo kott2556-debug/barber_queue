@@ -78,7 +78,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("ตั้งค่าระบบ"),
+        title: const Text("ตั้งค่าระบบ Admin"),
         centerTitle: true,
       ),
       body: ListView(

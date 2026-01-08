@@ -11,7 +11,7 @@ class AdminQueueScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("คิวทั้งหมด"),
+        title: const Text("ดูคิวทั้งหมด Admin"),
         centerTitle: true,
       ),
       body: StreamBuilder<QuerySnapshot>(

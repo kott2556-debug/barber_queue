@@ -15,7 +15,7 @@ class QueueScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('คิวของคุณ'),
+        title: const Text('คิวของฉัน'),
         centerTitle: true,
         backgroundColor: const Color(0xFF4CAF93),
       ),
