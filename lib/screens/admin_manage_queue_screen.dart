@@ -91,6 +91,7 @@ class AdminManageQueueScreen extends StatelessWidget {
                     child: Text(
                       queueLabel,
                       style: const TextStyle(
+                        fontSize: 14, // ขนาดอักษรคิวที่1-10
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),

@@ -13,6 +13,8 @@ class AdminQueueScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("ดูคิวทั้งหมด (Admin)"),
         centerTitle: true,
+        backgroundColor: const Color(0xFF4CAF93), // ✅ สีแอพบาร์
+        foregroundColor: Colors.white,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: firestore.streamBookings(),
@@ -67,7 +69,7 @@ class AdminQueueScreen extends StatelessWidget {
 
               switch (status) {
                 case 'serving':
-                  statusColor = Colors.green;
+                  statusColor = const Color(0xFF2E7D32); // เขียวเข้มอ่านง่าย
                   statusText = 'กำลังให้บริการ';
                   break;
                 case 'done':
@@ -80,16 +82,26 @@ class AdminQueueScreen extends StatelessWidget {
               }
 
               return Card(
+                // ✅ ตัดสีเทาหม่นของ Material 3
+                surfaceTintColor: Colors.transparent,
+
+                // ✅ สีเวกเตอร์อ่อน ๆ เฉพาะ serving
+                color: status == 'serving'
+                    ? const Color(0xFFE8F5F0)
+                    : null,
+
                 margin:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 child: ListTile(
-                  // คิว 1–10 (สีใหม่)
+                  // คิว 1–10 (serving เด่นขึ้น)
                   leading: Text(
                     queueLabel,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Color.fromARGB(255, 27, 146, 3),
+                      color: status == 'serving'
+                          ? const Color(0xFF2E7D32)
+                          : const Color(0xFF2196F3),
                     ),
                   ),
 
