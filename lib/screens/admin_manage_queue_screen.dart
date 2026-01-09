@@ -28,15 +28,34 @@ class AdminManageQueueScreen extends StatelessWidget {
 
           final docs = snapshot.data!.docs;
 
+          // ==================================================
+          // ✅ SORT ตาม queueLabel (คิว 1 → คิว 10)
+          // ==================================================
+          final sortedDocs = [...docs];
+          sortedDocs.sort((a, b) {
+            final aData = a.data() as Map<String, dynamic>;
+            final bData = b.data() as Map<String, dynamic>;
+
+            final aLabel = aData['queueLabel'] ?? '';
+            final bLabel = bData['queueLabel'] ?? '';
+
+            int extractNumber(String label) {
+              final match = RegExp(r'\d+').firstMatch(label);
+              return match != null ? int.parse(match.group(0)!) : 999;
+            }
+
+            return extractNumber(aLabel).compareTo(extractNumber(bLabel));
+          });
+
           return ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: docs.length,
+            itemCount: sortedDocs.length,
             itemBuilder: (context, index) {
-              final doc = docs[index];
+              final doc = sortedDocs[index];
               final data = doc.data() as Map<String, dynamic>;
 
               final status = data['status'] ?? 'waiting';
-              final phone = data['phone']; // ✅ ใช้ตอน finishQueue
+              final queueLabel = data['queueLabel'] ?? '${index + 1}';
 
               Color statusColor;
               String statusText;
@@ -61,9 +80,21 @@ class AdminManageQueueScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: statusColor,
-                    child: Text('${index + 1}'),
+                  leading: Container(
+                    width: 44,
+                    height: 32,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: statusColor,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      queueLabel,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                   title: Text(data['name'] ?? '-'),
                   subtitle: Text('เวลา ${data['time'] ?? '-'}'),
@@ -78,6 +109,8 @@ class AdminManageQueueScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+
+                      // เรียกคิว (เหมือนเดิม)
                       if (status == 'waiting')
                         TextButton(
                           onPressed: () async {
@@ -85,16 +118,18 @@ class AdminManageQueueScreen extends StatelessWidget {
                           },
                           child: const Text('เรียกคิว'),
                         ),
+
+                      // 🔒 เสร็จแล้ว (แก้ตรงนี้)
                       if (status == 'serving')
                         TextButton(
-                          onPressed: phone == null
-                              ? null
-                              : () async {
-                                  await firestoreService.finishQueue(
-                                    doc.id,
-                                    phone,
-                                  );
-                                },
+                          onPressed: () async {
+                            await FirebaseFirestore.instance
+                                .collection('bookings')
+                                .doc(doc.id)
+                                .update({
+                              'status': 'done',
+                            });
+                          },
                           child: const Text('เสร็จแล้ว'),
                         ),
                     ],

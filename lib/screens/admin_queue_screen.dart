@@ -83,24 +83,28 @@ class AdminQueueScreen extends StatelessWidget {
                 margin:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 child: ListTile(
-                  // 🔥 ตัด CircleAvatar ออก เหลือคิวเปล่า ๆ
+                  // คิว 1–10 (สีใหม่)
                   leading: Text(
                     queueLabel,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
+                      color: Color.fromARGB(255, 27, 146, 3),
                     ),
                   ),
+
+                  // ชื่อ + เว้นวรรค + เบอร์โทร
                   title: Text(
-                    name,
+                    '$name   $phone',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
+
+                  // ใต้ชื่อ → เวลา → ใต้เวลา → สถานะ
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('เวลา $time'),
-                      Text('เบอร์ $phone'),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
