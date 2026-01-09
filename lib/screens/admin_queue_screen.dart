@@ -83,14 +83,12 @@ class AdminQueueScreen extends StatelessWidget {
                 margin:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: const Color(0xFF4CAF93),
-                    child: Text(
-                      queueLabel,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  // 🔥 ตัด CircleAvatar ออก เหลือคิวเปล่า ๆ
+                  leading: Text(
+                    queueLabel,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   title: Text(
