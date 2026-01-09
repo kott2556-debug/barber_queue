@@ -31,16 +31,36 @@ class AdminQueueScreen extends StatelessWidget {
             return const Center(child: Text("ยังไม่มีคิว"));
           }
 
+          // ==================================================
+          // ✅ SORT เฉพาะ UI ตาม queueLabel (คิว 1 → คิว 10)
+          // ==================================================
+          final sortedDocs = [...docs];
+          sortedDocs.sort((a, b) {
+            final aData = a.data() as Map<String, dynamic>;
+            final bData = b.data() as Map<String, dynamic>;
+
+            final aLabel = aData['queueLabel'] ?? '';
+            final bLabel = bData['queueLabel'] ?? '';
+
+            int extractNumber(String label) {
+              final match = RegExp(r'\d+').firstMatch(label);
+              return match != null ? int.parse(match.group(0)!) : 999;
+            }
+
+            return extractNumber(aLabel).compareTo(extractNumber(bLabel));
+          });
+
           return ListView.builder(
-            itemCount: docs.length,
+            itemCount: sortedDocs.length,
             itemBuilder: (context, index) {
-              final data = docs[index].data() as Map<String, dynamic>;
+              final data =
+                  sortedDocs[index].data() as Map<String, dynamic>;
 
               final name = data['name'] ?? '-';
               final phone = data['phone'] ?? '-';
               final time = data['time'] ?? '-';
               final status = data['status'] ?? 'waiting';
-              final queueLabel = data['queueLabel'] ?? '-'; // ✅ ชื่อคิว
+              final queueLabel = data['queueLabel'] ?? '-';
 
               late Color statusColor;
               late String statusText;
@@ -85,7 +105,9 @@ class AdminQueueScreen extends StatelessWidget {
                       const SizedBox(height: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: statusColor.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
