@@ -10,7 +10,7 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
-  final QueueManager qm = QueueManager(); // ✅ ตรงกับ Singleton ของคุณ
+  final QueueManager qm = QueueManager();
   final FirestoreService firestore = FirestoreService();
 
   String? selectedTime;
@@ -21,9 +21,8 @@ class _BookingScreenState extends State<BookingScreen> {
     return AnimatedBuilder(
       animation: qm,
       builder: (context, _) {
-        final times = qm.isOpenForBooking
-            ? qm.availableTimes.take(10).toList()
-            : [];
+        final times =
+            qm.isOpenForBooking ? qm.availableTimes.take(10).toList() : [];
 
         return Scaffold(
           backgroundColor: const Color(0xFFF4F7F6),
@@ -46,6 +45,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       itemCount: times.length,
                       itemBuilder: (context, index) {
                         final time = times[index];
+                        final queueLabel = 'คิว ${index + 1}';
                         final isBooked = bookedTimes.contains(time);
                         final isSelected = selectedTime == time;
 
@@ -55,16 +55,14 @@ class _BookingScreenState extends State<BookingScreen> {
                             elevation: isSelected ? 3 : 1,
                             borderRadius: BorderRadius.circular(24),
                             color: isBooked
-                                ? Colors
-                                      .grey
-                                      .shade300 // 👈 จาง
+                                ? Colors.grey.shade300
                                 : isSelected
-                                ? const Color(0xFFDFF3EC)
-                                : Colors.white,
+                                    ? const Color(0xFFDFF3EC)
+                                    : Colors.white,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(24),
                               onTap: isBooked
-                                  ? null // 👈 กดไม่ได้
+                                  ? null
                                   : () {
                                       setState(() {
                                         selectedTime = time;
@@ -77,19 +75,33 @@ class _BookingScreenState extends State<BookingScreen> {
                                 ),
                                 child: Row(
                                   children: [
-                                    Text(
-                                      time,
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                        color: isBooked
-                                            ? Colors.grey
-                                            : Colors.black,
-                                      ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          queueLabel,
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          time,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: isBooked
+                                                ? Colors.grey
+                                                : Colors.black54,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                     const Spacer(),
                                     if (isBooked)
-                                      const Icon(Icons.lock, color: Colors.grey)
+                                      const Icon(Icons.lock,
+                                          color: Colors.grey)
                                     else if (isSelected)
                                       const Icon(
                                         Icons.check_circle,
@@ -109,7 +121,8 @@ class _BookingScreenState extends State<BookingScreen> {
               : Center(
                   child: Text(
                     "ขณะนี้ปิดรับคิวชั่วคราว",
-                    style: TextStyle(fontSize: 18, color: Colors.grey[700]),
+                    style:
+                        TextStyle(fontSize: 18, color: Colors.grey.shade700),
                   ),
                 ),
 
@@ -117,8 +130,7 @@ class _BookingScreenState extends State<BookingScreen> {
           bottomNavigationBar: Padding(
             padding: const EdgeInsets.all(16),
             child: ElevatedButton(
-              onPressed:
-                  (!qm.isOpenForBooking ||
+              onPressed: (!qm.isOpenForBooking ||
                       selectedTime == null ||
                       _isSubmitting)
                   ? null
@@ -128,7 +140,6 @@ class _BookingScreenState extends State<BookingScreen> {
                       setState(() => _isSubmitting = true);
                       final ctx = context;
 
-                      // ตรวจสอบผู้ใช้
                       if (qm.currentUserName == null ||
                           qm.currentUserPhone == null) {
                         if (ctx.mounted) {
@@ -141,10 +152,13 @@ class _BookingScreenState extends State<BookingScreen> {
                       }
 
                       try {
+                        final index = times.indexOf(selectedTime!);
+
                         await firestore.addBookingTransaction(
                           name: qm.currentUserName!,
                           phone: qm.currentUserPhone!,
                           time: selectedTime!,
+                          queueLabel: 'คิว ${index + 1}',
                         );
 
                         if (!ctx.mounted) return;
@@ -174,11 +188,9 @@ class _BookingScreenState extends State<BookingScreen> {
                         color: Colors.white,
                       ),
                     )
-                  : Text(
-                      qm.isOpenForBooking
-                          ? "ยืนยันจองคิว"
-                          : "ปิดรับคิวชั่วคราว",
-                      style: const TextStyle(
+                  : const Text(
+                      "ยืนยันจองคิว",
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),

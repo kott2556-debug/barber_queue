@@ -89,6 +89,7 @@ class QueueManager extends ChangeNotifier {
       name: name,
       phone: phone,
       time: time,
+      queueLabel: 'คิว ${_bookings.length + 1}',
     );
   }
 

@@ -11,7 +11,7 @@ class AdminQueueScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("ดูคิวทั้งหมด Admin"),
+        title: const Text("ดูคิวทั้งหมด (Admin)"),
         centerTitle: true,
       ),
       body: StreamBuilder<QuerySnapshot>(
@@ -39,23 +39,67 @@ class AdminQueueScreen extends StatelessWidget {
               final name = data['name'] ?? '-';
               final phone = data['phone'] ?? '-';
               final time = data['time'] ?? '-';
+              final status = data['status'] ?? 'waiting';
+              final queueLabel = data['queueLabel'] ?? '-'; // ✅ ชื่อคิว
+
+              late Color statusColor;
+              late String statusText;
+
+              switch (status) {
+                case 'serving':
+                  statusColor = Colors.green;
+                  statusText = 'กำลังให้บริการ';
+                  break;
+                case 'done':
+                  statusColor = Colors.grey;
+                  statusText = 'เสร็จแล้ว';
+                  break;
+                default:
+                  statusColor = Colors.orange;
+                  statusText = 'รอคิว';
+              }
 
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: Colors.green.shade600,
+                    backgroundColor: const Color(0xFF4CAF93),
                     child: Text(
-                      '${index + 1}',
-                      style: const TextStyle(color: Colors.white),
+                      queueLabel,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   title: Text(
                     name,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text('เวลา $time\nเบอร์ $phone'),
-                  isThreeLine: true,
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('เวลา $time'),
+                      Text('เบอร์ $phone'),
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          statusText,
+                          style: TextStyle(
+                            color: statusColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },

@@ -45,7 +45,9 @@ class QueueScreen extends StatelessWidget {
                 // แสดงเฉพาะคิวล่าสุด
                 final doc = userQueues.last;
                 final data = doc.data() as Map<String, dynamic>;
+
                 final status = data['status'];
+                final queueLabel = data['queueLabel']; // ✅ ดึงชื่อคิว
 
                 Color statusColor;
                 String statusText;
@@ -76,6 +78,20 @@ class QueueScreen extends StatelessWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          // ✅ ชื่อคิว
+                          if (queueLabel != null)
+                            Text(
+                              queueLabel,
+                              style: const TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF4CAF93),
+                              ),
+                            ),
+
+                          if (queueLabel != null)
+                            const SizedBox(height: 8),
+
                           Text(
                             data['name'] ?? '-',
                             style: const TextStyle(
