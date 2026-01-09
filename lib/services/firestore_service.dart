@@ -4,7 +4,7 @@ class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   // ==================================================
-  // 🔐 TRANSACTION กันจองซ้ำ
+  // 🔐 USER: จองคิว (Transaction กันจองซ้ำ)
   // ==================================================
   Future<void> addBookingTransaction({
     required String name,
@@ -18,10 +18,12 @@ class FirestoreService {
     await _db.runTransaction((transaction) async {
       final activeSnap = await transaction.get(activeRef);
 
+      // ❌ มีคิวอยู่แล้ว
       if (activeSnap.exists) {
         throw Exception('USER_ALREADY_HAS_QUEUE');
       }
 
+      // ✅ สร้างคิว
       transaction.set(bookingRef, {
         'name': name,
         'phone': phone,
@@ -31,6 +33,7 @@ class FirestoreService {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
+      // ✅ lock เบอร์โทร
       transaction.set(activeRef, {
         'bookingId': bookingRef.id,
         'createdAt': FieldValue.serverTimestamp(),
@@ -38,18 +41,18 @@ class FirestoreService {
     });
   }
 
-  // ===============================
-  // 🧑‍💼 Admin: เรียกคิว
-  // ===============================
+  // ==================================================
+  // 🧑‍💼 ADMIN: เรียกคิว
+  // ==================================================
   Future<void> callNextQueue(String docId) async {
     await _db.collection('bookings').doc(docId).update({
       'status': 'serving',
     });
   }
 
-  // ===============================
-  // 🧑‍💼 Admin: ปิดคิว
-  // ===============================
+  // ==================================================
+  // 🧑‍💼 ADMIN: ปิดคิว + ปลด lock
+  // ==================================================
   Future<void> finishQueue(String docId, String phone) async {
     await _db.collection('bookings').doc(docId).update({
       'status': 'done',
@@ -58,9 +61,9 @@ class FirestoreService {
     await _db.collection('active_bookings').doc(phone).delete();
   }
 
-  // ===============================
-  // 🔄 realtime (Admin)
-  // ===============================
+  // ==================================================
+  // 🔄 ADMIN: realtime ดูคิวทั้งหมด
+  // ==================================================
   Stream<QuerySnapshot> streamBookings() {
     return _db
         .collection('bookings')
@@ -68,9 +71,9 @@ class FirestoreService {
         .snapshots();
   }
 
-  // ===============================
-  // 🔄 realtime เวลาที่ถูกจอง
-  // ===============================
+  // ==================================================
+  // 🔄 realtime เวลาที่ถูกจอง (กันเวลาซ้ำ)
+  // ==================================================
   Stream<List<String>> streamBookedTimes() {
     return _db
         .collection('bookings')
@@ -80,5 +83,26 @@ class FirestoreService {
           (snapshot) =>
               snapshot.docs.map((doc) => doc['time'] as String).toList(),
         );
+  }
+
+  // ==================================================
+  // 🔥 ADMIN: ล้างคิวทั้งหมด (2 collection)
+  // ==================================================
+  Future<void> clearAllQueues() async {
+    final batch = _db.batch();
+
+    // ลบ bookings
+    final bookings = await _db.collection('bookings').get();
+    for (final doc in bookings.docs) {
+      batch.delete(doc.reference);
+    }
+
+    // ลบ active_bookings
+    final actives = await _db.collection('active_bookings').get();
+    for (final doc in actives.docs) {
+      batch.delete(doc.reference);
+    }
+
+    await batch.commit();
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'admin_set_time_screen.dart';
 import '../utils/queue_manager.dart';
+import '../services/firestore_service.dart';
 
 class AdminSettingsScreen extends StatefulWidget {
   const AdminSettingsScreen({super.key});
@@ -11,14 +12,14 @@ class AdminSettingsScreen extends StatefulWidget {
 
 class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   final QueueManager qm = QueueManager();
-  bool isClosedForBooking = false; // true = ปิดรับคิวชั่วคราว
+  final FirestoreService firestore = FirestoreService();
+
+  bool isClosedForBooking = false;
 
   @override
   void initState() {
     super.initState();
-    // เช็คตอนเริ่มว่า availableTimes ว่างหรือไม่
     isClosedForBooking = qm.availableTimes.isEmpty;
-    // ฟังการเปลี่ยนแปลง realtime
     qm.addListener(_updateState);
   }
 
@@ -35,44 +36,78 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   }
 
   void _toggleBooking() {
-  if (isClosedForBooking) {
-    // ถ้าเปิดรับคิว และยังไม่มีเวลาตั้งไว้
-    final times = qm.availableTimes;
-
-    if (times.isEmpty) {
-      qm.setAvailableTimes([
-        '10:00',
-        '10:30',
-        '11:00',
-        '11:30',
-        '12:00',
-        '13:00',
-        '13:30',
-        '14:00',
-        '14:30',
-        '15:00',
-      ]);
+    if (isClosedForBooking) {
+      if (qm.availableTimes.isEmpty) {
+        qm.setAvailableTimes([
+          '07:00',
+          '08:00',
+          '09:00',
+          '10:00',
+          '11:00',
+          '13:00',
+          '14:00',
+          '15:00',
+          '16:00',
+          '17:00',
+        ]);
+      }
+      qm.setOpenForBooking(true);
+    } else {
+      qm.setOpenForBooking(false);
     }
 
-    qm.setOpenForBooking(true);
-  } else {
-    // ปิดรับคิว
-    qm.setOpenForBooking(false);
+    setState(() {
+      isClosedForBooking = !qm.isOpenForBooking;
+    });
   }
 
-  setState(() {
-    isClosedForBooking = !qm.isOpenForBooking;
-  });
+  // ===============================
+  // 🔥 ล้างคิวทั้งหมด + ยืนยัน
+  // ===============================
+  void _confirmClearAllQueues() {
+  showDialog(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text("ยืนยันการล้างคิว"),
+      content: const Text(
+        "การล้างคิวจะลบข้อมูลลูกค้าทั้งหมด\nไม่สามารถกู้คืนได้\n\nต้องการดำเนินการต่อหรือไม่?",
+      ),
+      actions: [
+        TextButton(
+          child: const Text("ยกเลิก"),
+          onPressed: () => Navigator.pop(dialogContext),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+          ),
+          child: const Text("ยืนยันล้างคิว"),
+          onPressed: () async {
+            Navigator.pop(dialogContext);
+
+            // 🔒 เก็บ context ไว้ก่อน async
+            final navigator = Navigator.of(context);
+            final messenger = ScaffoldMessenger.of(context);
+
+            await firestore.clearAllQueues();
+
+            if (!mounted) return;
+
+            messenger.showSnackBar(
+              const SnackBar(content: Text("ล้างคิวทั้งหมดเรียบร้อย")),
+            );
+
+            navigator.pushNamedAndRemoveUntil(
+              '/',
+              (route) => false,
+            );
+          },
+        ),
+      ],
+    ),
+  );
 }
 
-
-  void _clearCustomerQueue() {
-    // ล้างเฉพาะลูกค้า ไม่กระทบเวลาที่ตั้งไว้
-    qm.clearQueue();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("ล้างคิวลูกค้าทั้งหมดเรียบร้อย")),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +120,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
         padding: const EdgeInsets.all(20),
         children: [
           // ----------------------------
-          // หัวข้อ 1: ตั้งค่าเวลารับคิว
+          // ตั้งค่าเวลารับคิว
           // ----------------------------
           ListTile(
             leading: const Icon(Icons.access_time),
@@ -103,26 +138,28 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
           const Divider(),
 
           // ----------------------------
-          // หัวข้อ 2: ปิด/เปิดรับคิว
+          // เปิด / ปิดรับคิว
           // ----------------------------
           ListTile(
             leading: Icon(isClosedForBooking ? Icons.lock_open : Icons.block),
             title: Text(isClosedForBooking ? "เปิดรับคิว" : "ปิดรับคิว"),
-            subtitle: Text(isClosedForBooking
-                ? "สถานะ: ปัจจุบันปิดอยู่ คลิกเพื่อเปิด"
-                : "สถานะ: ปัจจุบันเปิดอยู่ คลิกเพื่อปิด"),
+            subtitle: Text(
+              isClosedForBooking
+                  ? "สถานะ: ปิดอยู่ (แตะเพื่อเปิด)"
+                  : "สถานะ: เปิดอยู่ (แตะเพื่อปิด)",
+            ),
             onTap: _toggleBooking,
           ),
           const Divider(),
 
           // ----------------------------
-          // หัวข้อ 3: ล้างคิวลูกค้าทั้งหมด
+          // ล้างคิวทั้งหมด
           // ----------------------------
           ListTile(
-            leading: const Icon(Icons.restart_alt),
+            leading: const Icon(Icons.restart_alt, color: Colors.red),
             title: const Text("ล้างคิวทั้งหมด"),
-            subtitle: const Text("ลบรายชื่อและเบอร์โทรของลูกค้าทั้งหมด"),
-            onTap: _clearCustomerQueue,
+            subtitle: const Text("ลบข้อมูลคิวลูกค้าทั้งหมด"),
+            onTap: _confirmClearAllQueues,
           ),
         ],
       ),
