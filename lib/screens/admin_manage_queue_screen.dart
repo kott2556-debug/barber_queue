@@ -28,23 +28,16 @@ class AdminManageQueueScreen extends StatelessWidget {
 
           final docs = snapshot.data!.docs;
 
-          // ==================================================
-          // ✅ SORT ตาม queueLabel (คิว 1 → คิว 10)
-          // ==================================================
+          // ✅ sort ตามเลขคิว
           final sortedDocs = [...docs];
           sortedDocs.sort((a, b) {
-            final aData = a.data() as Map<String, dynamic>;
-            final bData = b.data() as Map<String, dynamic>;
+            final aLabel = (a['queueLabel'] ?? '') as String;
+            final bLabel = (b['queueLabel'] ?? '') as String;
 
-            final aLabel = aData['queueLabel'] ?? '';
-            final bLabel = bData['queueLabel'] ?? '';
+            int extract(String s) =>
+                int.tryParse(RegExp(r'\d+').firstMatch(s)?.group(0) ?? '') ?? 999;
 
-            int extractNumber(String label) {
-              final match = RegExp(r'\d+').firstMatch(label);
-              return match != null ? int.parse(match.group(0)!) : 999;
-            }
-
-            return extractNumber(aLabel).compareTo(extractNumber(bLabel));
+            return extract(aLabel).compareTo(extract(bLabel));
           });
 
           return ListView.builder(
@@ -55,7 +48,7 @@ class AdminManageQueueScreen extends StatelessWidget {
               final data = doc.data() as Map<String, dynamic>;
 
               final status = data['status'] ?? 'waiting';
-              final queueLabel = data['queueLabel'] ?? '${index + 1}';
+              final queueLabel = data['queueLabel'] ?? 'คิว ${index + 1}';
 
               Color statusColor;
               String statusText;
@@ -91,7 +84,7 @@ class AdminManageQueueScreen extends StatelessWidget {
                     child: Text(
                       queueLabel,
                       style: const TextStyle(
-                        fontSize: 14, // ขนาดอักษรคิวที่1-10
+                        fontSize: 14,
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
@@ -111,27 +104,21 @@ class AdminManageQueueScreen extends StatelessWidget {
                         ),
                       ),
 
-                      // เรียกคิว (เหมือนเดิม)
+                      // ▶️ เรียกคิว
                       if (status == 'waiting')
                         TextButton(
                           onPressed: () async {
-                            await firestoreService.callNextQueue(
-                              bookingId: doc.id,
-                              phone: doc['phone'],
-                              time: doc['time'],
-                            );
+                            await firestoreService.callNextQueueByAdmin(doc.id);
+
                           },
                           child: const Text('เรียกคิว'),
                         ),
 
-                      // 🔒 เสร็จแล้ว (แก้ตรงนี้)
+                      // ✅ เสร็จแล้ว
                       if (status == 'serving')
                         TextButton(
                           onPressed: () async {
-                            await FirebaseFirestore.instance
-                                .collection('bookings')
-                                .doc(doc.id)
-                                .update({'status': 'done'});
+                            await firestoreService.finishQueueByAdmin(doc.id);
                           },
                           child: const Text('เสร็จแล้ว'),
                         ),
