@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import '../services/firestore_service.dart';
+import 'package:flutter/material.dart';
 
 class QueueManager extends ChangeNotifier {
   // --------------------
@@ -32,22 +32,13 @@ class QueueManager extends ChangeNotifier {
   // เวลาที่เปิดให้จอง
   // --------------------
   final List<String> _availableTimes = [];
-
   List<String> get availableTimes => List.unmodifiable(_availableTimes);
 
   void _initDefaultTimes() {
     if (_availableTimes.isEmpty) {
       _availableTimes.addAll([
-        '07:00',
-        '08:00',
-        '09:00',
-        '10:00',
-        '11:00',
-        '13:00',
-        '14:00',
-        '15:00',
-        '16:00',
-        '17:00',
+        '07:00', '08:00', '09:00', '10:00', '11:00',
+        '13:00', '14:00', '15:00', '16:00', '17:00',
       ]);
     }
   }
@@ -71,14 +62,7 @@ class QueueManager extends ChangeNotifier {
   }
 
   // --------------------
-  // คิวทั้งหมด (เก็บเผื่ออนาคต)
-  // --------------------
-  final List<Map<String, dynamic>> _bookings = [];
-
-  List<Map<String, dynamic>> get bookings => _bookings;
-
-  // --------------------
-  // เพิ่มคิว
+  // เพิ่มคิวแบบ transaction ป้องกันซ้ำ
   // --------------------
   Future<void> addBooking({
     required String name,
@@ -89,7 +73,7 @@ class QueueManager extends ChangeNotifier {
       name: name,
       phone: phone,
       time: time,
-      queueLabel: 'คิว ${_bookings.length + 1}',
+      queueLabel: 'คิว ${_availableTimes.indexOf(time) + 1}',
     );
   }
 
@@ -97,7 +81,6 @@ class QueueManager extends ChangeNotifier {
   // ล้างคิว (Admin)
   // --------------------
   void clearQueue() {
-    _bookings.clear();
     notifyListeners();
   }
 }

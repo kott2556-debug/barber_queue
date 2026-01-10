@@ -19,7 +19,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   @override
   void initState() {
     super.initState();
-    isClosedForBooking = qm.availableTimes.isEmpty;
+    isClosedForBooking = !qm.isOpenForBooking;
     qm.addListener(_updateState);
   }
 
@@ -31,83 +31,48 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
 
   void _updateState() {
     setState(() {
-      isClosedForBooking = qm.availableTimes.isEmpty;
-    });
-  }
-
-  void _toggleBooking() {
-    if (isClosedForBooking) {
-      if (qm.availableTimes.isEmpty) {
-        qm.setAvailableTimes([
-          '07:00',
-          '08:00',
-          '09:00',
-          '10:00',
-          '11:00',
-          '13:00',
-          '14:00',
-          '15:00',
-          '16:00',
-          '17:00',
-        ]);
-      }
-      qm.setOpenForBooking(true);
-    } else {
-      qm.setOpenForBooking(false);
-    }
-
-    setState(() {
       isClosedForBooking = !qm.isOpenForBooking;
     });
   }
 
-  // ===============================
-  // 🔥 ล้างคิวทั้งหมด + ยืนยัน
-  // ===============================
+  void _toggleBooking() {
+    qm.setOpenForBooking(!qm.isOpenForBooking);
+  }
+
   void _confirmClearAllQueues() {
-  showDialog(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: const Text("ยืนยันการล้างคิว"),
-      content: const Text(
-        "การล้างคิวจะลบข้อมูลลูกค้าทั้งหมด\nไม่สามารถกู้คืนได้\n\nต้องการดำเนินการต่อหรือไม่?",
-      ),
-      actions: [
-        TextButton(
-          child: const Text("ยกเลิก"),
-          onPressed: () => Navigator.pop(dialogContext),
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text("ยืนยันการล้างคิว"),
+        content: const Text(
+          "การล้างคิวจะลบข้อมูลลูกค้าทั้งหมด\nไม่สามารถกู้คืนได้\n\nต้องการดำเนินการต่อหรือไม่?",
         ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
+        actions: [
+          TextButton(
+            child: const Text("ยกเลิก"),
+            onPressed: () => Navigator.pop(dialogContext),
           ),
-          child: const Text("ยืนยันล้างคิว"),
-          onPressed: () async {
-            Navigator.pop(dialogContext);
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text("ยืนยันล้างคิว"),
+            onPressed: () async {
+              Navigator.pop(dialogContext);
 
-            // 🔒 เก็บ context ไว้ก่อน async
-            final navigator = Navigator.of(context);
-            final messenger = ScaffoldMessenger.of(context);
+              await firestore.clearAllQueues();
 
-            await firestore.clearAllQueues();
+              if (!mounted) return;
 
-            if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("ล้างคิวทั้งหมดเรียบร้อย")),
+              );
 
-            messenger.showSnackBar(
-              const SnackBar(content: Text("ล้างคิวทั้งหมดเรียบร้อย")),
-            );
-
-            navigator.pushNamedAndRemoveUntil(
-              '/',
-              (route) => false,
-            );
-          },
-        ),
-      ],
-    ),
-  );
-}
-
+              Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,27 +84,16 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          // ----------------------------
-          // ตั้งค่าเวลารับคิว
-          // ----------------------------
           ListTile(
             leading: const Icon(Icons.access_time),
             title: const Text("ตั้งค่าเวลารับคิว"),
             subtitle: const Text("กำหนดช่วงเวลาที่เปิดจอง"),
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const AdminSetTimeScreen(),
-                ),
-              );
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const AdminSetTimeScreen()));
             },
           ),
           const Divider(),
-
-          // ----------------------------
-          // เปิด / ปิดรับคิว
-          // ----------------------------
           ListTile(
             leading: Icon(isClosedForBooking ? Icons.lock_open : Icons.block),
             title: Text(isClosedForBooking ? "เปิดรับคิว" : "ปิดรับคิว"),
@@ -151,10 +105,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             onTap: _toggleBooking,
           ),
           const Divider(),
-
-          // ----------------------------
-          // ล้างคิวทั้งหมด
-          // ----------------------------
           ListTile(
             leading: const Icon(Icons.restart_alt, color: Colors.red),
             title: const Text("ล้างคิวทั้งหมด"),

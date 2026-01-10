@@ -9,9 +9,9 @@ class AdminSetTimeScreen extends StatefulWidget {
 }
 
 class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
-  TimeOfDay? _startTime; // เวลาเริ่มรับคิว
-  int _numQueues = 10; // จำนวนคิว
-  int _minutesPerQueue = 30; // นาทีต่อคิว
+  TimeOfDay? _startTime; 
+  int _numQueues = 10;
+  int _minutesPerQueue = 30;
 
   final QueueManager _qm = QueueManager();
 
@@ -23,36 +23,27 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
     _loadExistingTimes();
   }
 
-  // โหลดเวลาที่เคยตั้งจาก QueueManager
   void _loadExistingTimes() {
     final times = _qm.availableTimes;
     if (times.isNotEmpty) {
       _generatedTimes = List.from(times);
 
-      // เวลาเริ่ม
       final first = times.first.split(':');
       _startTime = TimeOfDay(
         hour: int.tryParse(first[0]) ?? 10,
         minute: int.tryParse(first[1]) ?? 0,
       );
 
-      // จำนวนคิว
       _numQueues = times.length;
 
-      // นาทีต่อคิว (ประมาณค่า)
       if (times.length >= 2) {
-        final firstTimeParts = times[0].split(':');
-        final secondTimeParts = times[1].split(':');
-
-        final firstMinutes =
-            (int.tryParse(firstTimeParts[0]) ?? 0) * 60 +
-                (int.tryParse(firstTimeParts[1]) ?? 0);
-        final secondMinutes =
-            (int.tryParse(secondTimeParts[0]) ?? 0) * 60 +
-                (int.tryParse(secondTimeParts[1]) ?? 0);
+        final firstMinutes = (int.tryParse(times[0].split(':')[0]) ?? 0) * 60 +
+            (int.tryParse(times[0].split(':')[1]) ?? 0);
+        final secondMinutes = (int.tryParse(times[1].split(':')[0]) ?? 0) * 60 +
+            (int.tryParse(times[1].split(':')[1]) ?? 0);
 
         int diff = secondMinutes - firstMinutes;
-        if (diff <= 0) diff = 30; // fallback
+        if (diff <= 0) diff = 30;
         _minutesPerQueue = diff.clamp(5, 120);
       }
     }
@@ -62,7 +53,6 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
     if (_startTime == null) return;
 
     _generatedTimes.clear();
-
     DateTime current = DateTime(0, 0, 0, _startTime!.hour, _startTime!.minute);
 
     for (int i = 0; i < _numQueues; i++) {
@@ -75,22 +65,20 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
 
   void _saveToQueueManager() {
     _generateAvailableTimes();
-
-    // แทนที่ค่าเดิมใน QueueManager
     _qm.setAvailableTimes(_generatedTimes);
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('บันทึกเวลารับคิวเรียบร้อย')),
     );
 
-    setState(() {}); // อัปเดตหน้าจอ
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ตั้งเวลารับคิวตัดผม'),
+        title: const Text('ตั้งเวลารับคิว'),
         backgroundColor: const Color(0xFF4CAF93),
         centerTitle: true,
       ),
@@ -99,20 +87,16 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // เลือกเวลาเริ่มรับคิว
             ListTile(
               title: const Text('เวลาเริ่มรับคิว'),
               subtitle: Text(
-                _startTime != null
-                    ? _startTime!.format(context)
-                    : 'ยังไม่ได้เลือก',
+                _startTime != null ? _startTime!.format(context) : 'ยังไม่ได้เลือก',
               ),
               trailing: ElevatedButton(
                 onPressed: () async {
                   final t = await showTimePicker(
                     context: context,
-                    initialTime:
-                        _startTime ?? const TimeOfDay(hour: 10, minute: 0),
+                    initialTime: _startTime ?? const TimeOfDay(hour: 10, minute: 0),
                   );
                   if (t != null) setState(() => _startTime = t);
                 },
@@ -121,7 +105,6 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
             ),
             const SizedBox(height: 20),
 
-            // เลือกจำนวนคิว
             Row(
               children: [
                 const Text('จำนวนคิว: '),
@@ -140,7 +123,6 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
             ),
             const SizedBox(height: 10),
 
-            // เลือกนาทีต่อคิว
             Row(
               children: [
                 const Text('นาทีต่อคิว: '),
@@ -151,8 +133,7 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
                     max: 120,
                     divisions: 23,
                     label: "$_minutesPerQueue",
-                    onChanged: (v) =>
-                        setState(() => _minutesPerQueue = v.toInt()),
+                    onChanged: (v) => setState(() => _minutesPerQueue = v.toInt()),
                   ),
                 ),
                 Text("$_minutesPerQueue นาที"),
@@ -160,7 +141,6 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
             ),
             const SizedBox(height: 20),
 
-            // ปุ่มบันทึก
             ElevatedButton(
               onPressed: (_startTime != null) ? _saveToQueueManager : null,
               style: ElevatedButton.styleFrom(
@@ -171,12 +151,8 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
             ),
             const SizedBox(height: 20),
 
-            // แสดงคิวที่สร้าง
             if (_generatedTimes.isNotEmpty)
-              const Text(
-                "เวลาคิวที่กำหนด:",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+              const Text("เวลาคิวที่กำหนด:", style: TextStyle(fontWeight: FontWeight.bold)),
             for (var e in _generatedTimes) Text(e),
           ],
         ),

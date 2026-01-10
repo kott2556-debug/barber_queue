@@ -115,7 +115,11 @@ class AdminManageQueueScreen extends StatelessWidget {
                       if (status == 'waiting')
                         TextButton(
                           onPressed: () async {
-                            await firestoreService.callNextQueue(doc.id);
+                            await firestoreService.callNextQueue(
+                              bookingId: doc.id,
+                              phone: doc['phone'],
+                              time: doc['time'],
+                            );
                           },
                           child: const Text('เรียกคิว'),
                         ),
@@ -127,9 +131,7 @@ class AdminManageQueueScreen extends StatelessWidget {
                             await FirebaseFirestore.instance
                                 .collection('bookings')
                                 .doc(doc.id)
-                                .update({
-                              'status': 'done',
-                            });
+                                .update({'status': 'done'});
                           },
                           child: const Text('เสร็จแล้ว'),
                         ),

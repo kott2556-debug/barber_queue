@@ -21,8 +21,7 @@ class _BookingScreenState extends State<BookingScreen> {
     return AnimatedBuilder(
       animation: qm,
       builder: (context, _) {
-        final times =
-            qm.isOpenForBooking ? qm.availableTimes.take(10).toList() : [];
+        final times = qm.isOpenForBooking ? qm.availableTimes.take(10).toList() : [];
 
         return Scaffold(
           backgroundColor: const Color(0xFFF4F7F6),
@@ -32,8 +31,6 @@ class _BookingScreenState extends State<BookingScreen> {
             backgroundColor: const Color(0xFFE6F4EF),
             elevation: 0,
           ),
-
-          // ================= BODY =================
           body: qm.isOpenForBooking
               ? StreamBuilder<List<String>>(
                   stream: firestore.streamBookedTimes(),
@@ -64,50 +61,27 @@ class _BookingScreenState extends State<BookingScreen> {
                               onTap: isBooked
                                   ? null
                                   : () {
-                                      setState(() {
-                                        selectedTime = time;
-                                      });
+                                      setState(() => selectedTime = time);
                                     },
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 22,
-                                  horizontal: 20,
-                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 20),
                                 child: Row(
                                   children: [
                                     Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          queueLabel,
-                                          style: const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
+                                        Text(queueLabel,
+                                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                                         const SizedBox(height: 4),
-                                        Text(
-                                          time,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: isBooked
-                                                ? Colors.grey
-                                                : Colors.black54,
-                                          ),
-                                        ),
+                                        Text(time,
+                                            style: TextStyle(fontSize: 14, color: isBooked ? Colors.grey : Colors.black54)),
                                       ],
                                     ),
                                     const Spacer(),
                                     if (isBooked)
-                                      const Icon(Icons.lock,
-                                          color: Colors.grey)
+                                      const Icon(Icons.lock, color: Colors.grey)
                                     else if (isSelected)
-                                      const Icon(
-                                        Icons.check_circle,
-                                        color: Color(0xFF4CAF93),
-                                        size: 28,
-                                      ),
+                                      const Icon(Icons.check_circle, color: Color(0xFF4CAF93), size: 28),
                                   ],
                                 ),
                               ),
@@ -121,29 +95,21 @@ class _BookingScreenState extends State<BookingScreen> {
               : Center(
                   child: Text(
                     "ขณะนี้ปิดรับคิวชั่วคราว",
-                    style:
-                        TextStyle(fontSize: 18, color: Colors.grey.shade700),
+                    style: TextStyle(fontSize: 18, color: Colors.grey.shade700),
                   ),
                 ),
-
-          // ================= CONFIRM BUTTON =================
           bottomNavigationBar: Padding(
             padding: const EdgeInsets.all(16),
             child: ElevatedButton(
-              onPressed: (!qm.isOpenForBooking ||
-                      selectedTime == null ||
-                      _isSubmitting)
+              onPressed: (!qm.isOpenForBooking || selectedTime == null || _isSubmitting)
                   ? null
                   : () async {
                       if (_isSubmitting) return;
-
                       setState(() => _isSubmitting = true);
-                      final ctx = context;
 
-                      if (qm.currentUserName == null ||
-                          qm.currentUserPhone == null) {
-                        if (ctx.mounted) {
-                          ScaffoldMessenger.of(ctx).showSnackBar(
+                      if (qm.currentUserName == null || qm.currentUserPhone == null) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text("กรุณา Login ใหม่")),
                           );
                         }
@@ -152,21 +118,17 @@ class _BookingScreenState extends State<BookingScreen> {
                       }
 
                       try {
-                        final index = times.indexOf(selectedTime!);
-
-                        await firestore.addBookingTransaction(
+                        await qm.addBooking(
                           name: qm.currentUserName!,
                           phone: qm.currentUserPhone!,
                           time: selectedTime!,
-                          queueLabel: 'คิว ${index + 1}',
                         );
 
-                        if (!ctx.mounted) return;
-                        Navigator.pushReplacementNamed(ctx, '/queue');
+                        if (!context.mounted) return;
+                        Navigator.pushReplacementNamed(context, '/queue');
                       } catch (e) {
-                        if (!ctx.mounted) return;
-
-                        ScaffoldMessenger.of(ctx).showSnackBar(
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text("คุณมีคิวอยู่แล้ว")),
                         );
                         setState(() => _isSubmitting = false);
@@ -175,25 +137,17 @@ class _BookingScreenState extends State<BookingScreen> {
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 56),
                 backgroundColor: const Color(0xFF4CAF93),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               ),
               child: _isSubmitting
                   ? const SizedBox(
                       width: 24,
                       height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 3,
-                        color: Colors.white,
-                      ),
+                      child: CircularProgressIndicator(strokeWidth: 3, color: Colors.white),
                     )
                   : const Text(
                       "ยืนยันจองคิว",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
             ),
           ),
