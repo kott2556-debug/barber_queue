@@ -103,7 +103,11 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("ตั้งค่าระบบ Admin"), centerTitle: true),
+      appBar: AppBar(
+        title: const Text("ตั้งค่าระบบ Admin"),
+        centerTitle: true,
+        backgroundColor: const Color(0xFF4CAF93), // ✅ สีเดียวกับระบบ Admin
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -120,7 +124,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
           ),
           const Divider(),
 
-          // ✅ เปิด / ปิดรับคิว (ปรับเฉพาะไอคอน + ตัวอักษร)
+          // ✅ เปิด / ปิดรับคิว
           ListTile(
             leading: Icon(
               isClosedForBooking ? Icons.lock_open : Icons.block,
