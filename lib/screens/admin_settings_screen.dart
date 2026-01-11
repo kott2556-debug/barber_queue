@@ -106,15 +106,26 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
       appBar: AppBar(
         title: const Text("ตั้งค่าระบบ Admin"),
         centerTitle: true,
-        backgroundColor: const Color(0xFF4CAF93), // ✅ สีเดียวกับระบบ Admin
-        foregroundColor: Colors.white
+        backgroundColor: const Color(0xFF4CAF93),
+        foregroundColor: Colors.white,
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          // ✅ ตั้งค่าเวลารับคิว (ปรับเฉพาะไอคอน + ตัวอักษร)
           ListTile(
-            leading: const Icon(Icons.access_time),
-            title: const Text("ตั้งค่าเวลารับคิว"),
+            leading: const Icon(
+              Icons.access_time,
+              size: 45,
+              color: Colors.blue,
+            ),
+            title: const Text(
+              "ตั้งค่าเวลารับคิว",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
             subtitle: const Text("กำหนดช่วงเวลาที่เปิดจอง"),
             onTap: () {
               Navigator.push(
@@ -123,6 +134,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
               );
             },
           ),
+
           const Divider(),
 
           // ✅ เปิด / ปิดรับคิว
@@ -130,7 +142,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             leading: Icon(
               isClosedForBooking ? Icons.lock_open : Icons.block,
               color: isClosedForBooking ? Colors.green : Colors.red,
-              size: 32,
+              size: 45,
             ),
             title: Text(
               isClosedForBooking ? "เปิดรับคิว" : "ปิดรับคิว",
