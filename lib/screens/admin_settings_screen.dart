@@ -77,8 +77,8 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [
-                    Color(0xFFD32F2F), // แดงเข้ม
-                    Color(0xFFFF5252), // แดงอ่อน
+                    Color(0xFFD32F2F),
+                    Color(0xFFFF5252),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -119,9 +119,21 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             },
           ),
           const Divider(),
+
+          // ✅ เปิด / ปิดรับคิว (ปรับเฉพาะไอคอน + ตัวอักษร)
           ListTile(
-            leading: Icon(isClosedForBooking ? Icons.lock_open : Icons.block),
-            title: Text(isClosedForBooking ? "เปิดรับคิว" : "ปิดรับคิว"),
+            leading: Icon(
+              isClosedForBooking ? Icons.lock_open : Icons.block,
+              color: isClosedForBooking ? Colors.green : Colors.red,
+              size: 32,
+            ),
+            title: Text(
+              isClosedForBooking ? "เปิดรับคิว" : "ปิดรับคิว",
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
             subtitle: Text(
               isClosedForBooking
                   ? "สถานะ: ปิดอยู่ (แตะเพื่อเปิด)"
@@ -129,6 +141,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             ),
             onTap: _toggleBooking,
           ),
+
           const Divider(),
           ListTile(
             leading: Container(
@@ -137,8 +150,8 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [
-                    Color(0xFFE53935), // แดงเข้ม
-                    Color(0xFFFF6F60), // แดงอ่อน
+                    Color(0xFFE53935),
+                    Color(0xFFFF6F60),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
