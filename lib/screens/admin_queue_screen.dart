@@ -11,7 +11,7 @@ class AdminQueueScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("ดูคิวทั้งหมด (Admin)"),
+        title: const Text("ดูคิวทั้งหมด Admin"),
         centerTitle: true,
         backgroundColor: const Color(0xFF4CAF93), // ✅ สีแอพบาร์
         foregroundColor: Colors.white,

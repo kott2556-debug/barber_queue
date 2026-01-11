@@ -130,7 +130,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       } catch (e) {
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("คิวนี้ถูกจองแล้ว")),
+                          const SnackBar(content: Text("คิวนี้ถูกจองแล้ว หรือ คุณมีคิวอยู่แล้ว")),
                         );
                         setState(() => _isSubmitting = false);
                       }
