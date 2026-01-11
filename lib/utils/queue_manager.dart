@@ -1,5 +1,7 @@
+import 'dart:async';
 import '../services/firestore_service.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class QueueManager extends ChangeNotifier {
   // --------------------
@@ -9,9 +11,11 @@ class QueueManager extends ChangeNotifier {
   factory QueueManager() => _instance;
   QueueManager._internal() {
     _initDefaultTimes();
+    _listenBookingStatus(); // 🔥 ฟังสถานะเปิด/ปิดจาก Firestore
   }
 
   final FirestoreService _firestore = FirestoreService();
+  StreamSubscription<DocumentSnapshot>? _bookingStatusSub;
 
   // --------------------
   // ผู้ใช้ปัจจุบัน
@@ -51,14 +55,31 @@ class QueueManager extends ChangeNotifier {
   }
 
   // --------------------
-  // เปิด / ปิดรับคิว
+  // 🔓 เปิด / ปิดรับคิว (Firestore จริง)
   // --------------------
   bool _isOpenForBooking = true;
   bool get isOpenForBooking => _isOpenForBooking;
 
-  void setOpenForBooking(bool open) {
-    _isOpenForBooking = open;
-    notifyListeners();
+  void _listenBookingStatus() {
+    _bookingStatusSub = FirebaseFirestore.instance
+        .collection('system_settings')
+        .doc('booking')
+        .snapshots()
+        .listen((doc) {
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+        _isOpenForBooking = data['isOpen'] ?? true;
+        notifyListeners();
+      }
+    });
+  }
+
+  /// Admin ใช้สั่งเปิด / ปิดรับคิว
+  Future<void> setOpenForBooking(bool open) async {
+    await FirebaseFirestore.instance
+        .collection('system_settings')
+        .doc('booking')
+        .set({'isOpen': open}, SetOptions(merge: true));
   }
 
   // --------------------
@@ -82,5 +103,11 @@ class QueueManager extends ChangeNotifier {
   // --------------------
   void clearQueue() {
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _bookingStatusSub?.cancel();
+    super.dispose();
   }
 }
