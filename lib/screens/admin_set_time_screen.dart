@@ -81,6 +81,7 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
         title: const Text('ตั้งเวลารับคิว'),
         backgroundColor: const Color(0xFF4CAF93),
         centerTitle: true,
+        foregroundColor: Colors.white
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),

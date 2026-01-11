@@ -14,6 +14,7 @@ class AdminManageQueueScreen extends StatelessWidget {
         title: const Text('จัดการคิว Admin'),
         centerTitle: true,
         backgroundColor: const Color(0xFF4CAF93),
+        foregroundColor: Colors.white
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: firestoreService.streamBookings(),

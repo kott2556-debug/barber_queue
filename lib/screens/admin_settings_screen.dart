@@ -107,6 +107,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
         title: const Text("ตั้งค่าระบบ Admin"),
         centerTitle: true,
         backgroundColor: const Color(0xFF4CAF93), // ✅ สีเดียวกับระบบ Admin
+        foregroundColor: Colors.white
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
