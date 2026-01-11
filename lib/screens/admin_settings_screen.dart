@@ -53,8 +53,11 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             onPressed: () => Navigator.pop(dialogContext),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text("ยืนยันล้างคิว"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              shadowColor: Colors.transparent,
+              padding: EdgeInsets.zero,
+            ),
             onPressed: () async {
               Navigator.pop(dialogContext);
 
@@ -68,6 +71,29 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
 
               Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
             },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFFD32F2F), // แดงเข้ม
+                    Color(0xFFFF5252), // แดงอ่อน
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              alignment: Alignment.center,
+              child: const Text(
+                "ยืนยันล้างคิว",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -77,10 +103,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("ตั้งค่าระบบ Admin"),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text("ตั้งค่าระบบ Admin"), centerTitle: true),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -89,8 +112,10 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             title: const Text("ตั้งค่าเวลารับคิว"),
             subtitle: const Text("กำหนดช่วงเวลาที่เปิดจอง"),
             onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const AdminSetTimeScreen()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AdminSetTimeScreen()),
+              );
             },
           ),
           const Divider(),
@@ -106,8 +131,26 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.restart_alt, color: Colors.red),
-            title: const Text("ล้างคิวทั้งหมด"),
+            leading: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFFE53935), // แดงเข้ม
+                    Color(0xFFFF6F60), // แดงอ่อน
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.restart_alt, color: Colors.white),
+            ),
+            title: const Text(
+              "ล้างคิวทั้งหมด",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             subtitle: const Text("ลบข้อมูลคิวลูกค้าทั้งหมด"),
             onTap: _confirmClearAllQueues,
           ),
