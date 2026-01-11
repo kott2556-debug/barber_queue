@@ -104,21 +104,22 @@ class AdminManageQueueScreen extends StatelessWidget {
                         ),
                       ),
 
-                      // ▶️ เรียกคิว
+                      // ▶️ เรียกคิว (เปลี่ยน status อย่างเดียว)
                       if (status == 'waiting')
                         TextButton(
                           onPressed: () async {
-                            await firestoreService.callNextQueueByAdmin(doc.id);
-
+                            await firestoreService
+                                .callNextQueueByAdmin(doc.id);
                           },
                           child: const Text('เรียกคิว'),
                         ),
 
-                      // ✅ เสร็จแล้ว
+                      // ✅ เสร็จแล้ว (เปลี่ยน status อย่างเดียว)
                       if (status == 'serving')
                         TextButton(
                           onPressed: () async {
-                            await firestoreService.finishQueueByAdmin(doc.id);
+                            await firestoreService
+                                .finishQueueByAdmin(doc.id);
                           },
                           child: const Text('เสร็จแล้ว'),
                         ),

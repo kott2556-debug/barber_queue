@@ -33,7 +33,8 @@ class _BookingScreenState extends State<BookingScreen> {
           ),
           body: qm.isOpenForBooking
               ? StreamBuilder<List<String>>(
-                  stream: firestore.streamBookedTimes(),
+                  stream: firestore.streamLockedTimes(),
+
                   builder: (context, snapshot) {
                     final bookedTimes = snapshot.data ?? [];
 

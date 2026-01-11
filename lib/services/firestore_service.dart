@@ -68,9 +68,7 @@ class FirestoreService {
   // 🧑‍💼 ADMIN: เสร็จแล้ว (UX เดิม)
   // ==================================================
   Future<void> finishQueueByAdmin(String bookingId) async {
-    await _db.collection('bookings').doc(bookingId).update({
-      'status': 'done',
-    });
+    await _db.collection('bookings').doc(bookingId).update({'status': 'done'});
   }
 
   // ==================================================
@@ -124,5 +122,13 @@ class FirestoreService {
     }
 
     await batch.commit();
+  }
+
+  // 🔒 realtime เวลาที่ถูก lock (ใช้กับหน้าจองคิว)
+  Stream<List<String>> streamLockedTimes() {
+    return _db
+        .collection('time_locks')
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => doc.id).toList());
   }
 }
