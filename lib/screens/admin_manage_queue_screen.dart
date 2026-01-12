@@ -14,7 +14,7 @@ class AdminManageQueueScreen extends StatelessWidget {
         title: const Text('จัดการคิว Admin'),
         centerTitle: true,
         backgroundColor: const Color.fromARGB(255, 20, 175, 131),
-        foregroundColor: Colors.white
+        foregroundColor: Colors.white,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: firestoreService.streamBookings(),
@@ -64,7 +64,7 @@ class AdminManageQueueScreen extends StatelessWidget {
                   statusText = 'เสร็จแล้ว';
                   break;
                 default:
-                  statusColor = Colors.orange;
+                  statusColor = Colors.blue;
                   statusText = 'รอคิว';
               }
 
@@ -93,36 +93,61 @@ class AdminManageQueueScreen extends StatelessWidget {
                   ),
                   title: Text(data['name'] ?? '-'),
                   subtitle: Text('เวลา ${data['time'] ?? '-'}'),
-                  trailing: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      // ข้อความ status
                       Text(
                         statusText,
                         style: TextStyle(
                           color: statusColor,
                           fontWeight: FontWeight.bold,
+                          fontSize: 14, // ขนาดเท่ากันทั้งหมด
                         ),
                       ),
+                      const SizedBox(width: 8),
 
-                      // ▶️ เรียกคิว (เปลี่ยน status อย่างเดียว)
+                      // ปุ่มเรียกคิว / เสร็จแล้ว
                       if (status == 'waiting')
-                        TextButton(
+                        ElevatedButton(
                           onPressed: () async {
-                            await firestoreService
-                                .callNextQueueByAdmin(doc.id);
+                            await firestoreService.callNextQueueByAdmin(doc.id);
                           },
-                          child: const Text('เรียกคิว'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text(
+                            'รอคิว',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-
-                      // ✅ เสร็จแล้ว (เปลี่ยน status อย่างเดียว)
                       if (status == 'serving')
-                        TextButton(
+                        ElevatedButton(
                           onPressed: () async {
-                            await firestoreService
-                                .finishQueueByAdmin(doc.id);
+                            await firestoreService.finishQueueByAdmin(doc.id);
                           },
-                          child: const Text('เสร็จแล้ว'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text(
+                            'เสร็จแล้ว',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                     ],
                   ),

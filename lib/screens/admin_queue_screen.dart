@@ -77,7 +77,7 @@ class AdminQueueScreen extends StatelessWidget {
                   statusText = 'เสร็จแล้ว';
                   break;
                 default:
-                  statusColor = Colors.orange;
+                  statusColor = Colors.blue;
                   statusText = 'รอคิว';
               }
 
