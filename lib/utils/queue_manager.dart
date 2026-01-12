@@ -9,13 +9,17 @@ class QueueManager extends ChangeNotifier {
   // --------------------
   static final QueueManager _instance = QueueManager._internal();
   factory QueueManager() => _instance;
+
   QueueManager._internal() {
     _initDefaultTimes();
-    _listenBookingStatus(); // 🔥 ฟังสถานะเปิด/ปิดจาก Firestore
+    _listenBookingStatus();
+    _listenAvailableTimes(); // 🔥 ฟังเวลาคิวจาก Firestore
   }
 
   final FirestoreService _firestore = FirestoreService();
+
   StreamSubscription<DocumentSnapshot>? _bookingStatusSub;
+  StreamSubscription<DocumentSnapshot>? _availableTimesSub;
 
   // --------------------
   // ผู้ใช้ปัจจุบัน
@@ -36,26 +40,72 @@ class QueueManager extends ChangeNotifier {
   // เวลาที่เปิดให้จอง
   // --------------------
   final List<String> _availableTimes = [];
-  List<String> get availableTimes => List.unmodifiable(_availableTimes);
+  List<String> get availableTimes => List.unmodifiable(_availableTimes);  // --------------------
+  // 🏷️ แปลงเวลาเป็นป้ายคิว (เช่น คิว 1, คิว 2)
+  // --------------------
+  String getQueueLabel(String time) {
+    final index = _availableTimes.indexOf(time);
+    if (index == -1) return '';
+    return 'คิว ${index + 1}';
+  }
+
 
   void _initDefaultTimes() {
     if (_availableTimes.isEmpty) {
       _availableTimes.addAll([
-        '07:00', '08:00', '09:00', '10:00', '11:00',
-        '13:00', '14:00', '15:00', '16:00', '17:00',
+        '07:00',
+        '08:00',
+        '09:00',
+        '10:00',
+        '11:00',
+        '13:00',
+        '14:00',
+        '15:00',
+        '16:00',
+        '17:00',
       ]);
     }
   }
 
-  void setAvailableTimes(List<String> times) {
+  /// 🔥 Admin บันทึกเวลาคิว
+  Future<void> saveAvailableTimes(List<String> times) async {
     _availableTimes
       ..clear()
       ..addAll(times);
+
+    await FirebaseFirestore.instance
+        .collection('system_settings')
+        .doc('queue_times')
+        .set({
+      'times': times,
+    });
+
     notifyListeners();
   }
 
+  /// 🔥 ฟังเวลาคิวจาก Firestore (ทุกเครื่อง sync พร้อมกัน)
+  void _listenAvailableTimes() {
+    _availableTimesSub = FirebaseFirestore.instance
+        .collection('system_settings')
+        .doc('queue_times')
+        .snapshots()
+        .listen((doc) {
+      if (!doc.exists) return;
+
+      final data = doc.data() as Map<String, dynamic>;
+      final List<dynamic>? times = data['times'];
+
+      if (times != null) {
+        _availableTimes
+          ..clear()
+          ..addAll(times.cast<String>());
+        notifyListeners();
+      }
+    });
+  }
+
   // --------------------
-  // 🔓 เปิด / ปิดรับคิว (Firestore จริง)
+  // 🔓 เปิด / ปิดรับคิว
   // --------------------
   bool _isOpenForBooking = true;
   bool get isOpenForBooking => _isOpenForBooking;
@@ -74,7 +124,6 @@ class QueueManager extends ChangeNotifier {
     });
   }
 
-  /// Admin ใช้สั่งเปิด / ปิดรับคิว
   Future<void> setOpenForBooking(bool open) async {
     await FirebaseFirestore.instance
         .collection('system_settings')
@@ -83,7 +132,7 @@ class QueueManager extends ChangeNotifier {
   }
 
   // --------------------
-  // เพิ่มคิวแบบ transaction ป้องกันซ้ำ
+  // เพิ่มคิว
   // --------------------
   Future<void> addBooking({
     required String name,
@@ -98,16 +147,10 @@ class QueueManager extends ChangeNotifier {
     );
   }
 
-  // --------------------
-  // ล้างคิว (Admin)
-  // --------------------
-  void clearQueue() {
-    notifyListeners();
-  }
-
   @override
   void dispose() {
     _bookingStatusSub?.cancel();
+    _availableTimesSub?.cancel();
     super.dispose();
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/queue_manager.dart';
+import '../utils/queue_time_calculator.dart';
 
 class AdminSetTimeScreen extends StatefulWidget {
   const AdminSetTimeScreen({super.key});
@@ -9,7 +10,7 @@ class AdminSetTimeScreen extends StatefulWidget {
 }
 
 class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
-  TimeOfDay? _startTime; 
+  TimeOfDay? _startTime;
   int _numQueues = 10;
   int _minutesPerQueue = 30;
 
@@ -25,48 +26,45 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
 
   void _loadExistingTimes() {
     final times = _qm.availableTimes;
-    if (times.isNotEmpty) {
-      _generatedTimes = List.from(times);
+    if (times.isEmpty) return;
 
-      final first = times.first.split(':');
-      _startTime = TimeOfDay(
-        hour: int.tryParse(first[0]) ?? 10,
-        minute: int.tryParse(first[1]) ?? 0,
-      );
+    _generatedTimes = List.from(times);
 
-      _numQueues = times.length;
+    final first = times.first.split(':');
+    _startTime = TimeOfDay(
+      hour: int.parse(first[0]),
+      minute: int.parse(first[1]),
+    );
 
-      if (times.length >= 2) {
-        final firstMinutes = (int.tryParse(times[0].split(':')[0]) ?? 0) * 60 +
-            (int.tryParse(times[0].split(':')[1]) ?? 0);
-        final secondMinutes = (int.tryParse(times[1].split(':')[0]) ?? 0) * 60 +
-            (int.tryParse(times[1].split(':')[1]) ?? 0);
+    _numQueues = times.length;
 
-        int diff = secondMinutes - firstMinutes;
-        if (diff <= 0) diff = 30;
-        _minutesPerQueue = diff.clamp(5, 120);
-      }
+    if (times.length >= 2) {
+      final firstMin =
+          int.parse(times[0].split(':')[0]) * 60 +
+          int.parse(times[0].split(':')[1]);
+      final secondMin =
+          int.parse(times[1].split(':')[0]) * 60 +
+          int.parse(times[1].split(':')[1]);
+
+      _minutesPerQueue = (secondMin - firstMin).clamp(5, 120);
     }
   }
 
-  void _generateAvailableTimes() {
+  void _generateTimes() {
     if (_startTime == null) return;
 
-    _generatedTimes.clear();
-    DateTime current = DateTime(0, 0, 0, _startTime!.hour, _startTime!.minute);
-
-    for (int i = 0; i < _numQueues; i++) {
-      String formatted =
-          "${current.hour.toString().padLeft(2, '0')}:${current.minute.toString().padLeft(2, '0')}";
-      _generatedTimes.add(formatted);
-      current = current.add(Duration(minutes: _minutesPerQueue));
-    }
+    _generatedTimes = QueueTimeCalculator.generateTimes(
+      startTime: _startTime!,
+      count: _numQueues,
+      minutesPerQueue: _minutesPerQueue,
+    );
   }
 
-  void _saveToQueueManager() {
-    _generateAvailableTimes();
-    _qm.setAvailableTimes(_generatedTimes);
+  Future<void> _save() async {
+    _generateTimes();
+    await _qm.saveAvailableTimes(_generatedTimes);
 
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('บันทึกเวลารับคิวเรียบร้อย')),
     );
@@ -81,7 +79,7 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
         title: const Text('ตั้งเวลารับคิว'),
         backgroundColor: const Color(0xFF4CAF93),
         centerTitle: true,
-        foregroundColor: Colors.white
+        foregroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
@@ -91,13 +89,16 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
             ListTile(
               title: const Text('เวลาเริ่มรับคิว'),
               subtitle: Text(
-                _startTime != null ? _startTime!.format(context) : 'ยังไม่ได้เลือก',
+                _startTime != null
+                    ? _startTime!.format(context)
+                    : 'ยังไม่ได้เลือก',
               ),
               trailing: ElevatedButton(
                 onPressed: () async {
                   final t = await showTimePicker(
                     context: context,
-                    initialTime: _startTime ?? const TimeOfDay(hour: 10, minute: 0),
+                    initialTime:
+                        _startTime ?? const TimeOfDay(hour: 9, minute: 0),
                   );
                   if (t != null) setState(() => _startTime = t);
                 },
@@ -111,50 +112,57 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
                 const Text('จำนวนคิว: '),
                 Expanded(
                   child: Slider(
-                    value: _numQueues.toDouble().clamp(1, 20),
+                    value: _numQueues.toDouble(),
                     min: 1,
                     max: 20,
                     divisions: 19,
-                    label: "$_numQueues",
-                    onChanged: (v) => setState(() => _numQueues = v.toInt()),
+                    label: '$_numQueues',
+                    onChanged: (v) =>
+                        setState(() => _numQueues = v.toInt()),
                   ),
                 ),
-                Text("$_numQueues"),
+                Text('$_numQueues'),
               ],
             ),
-            const SizedBox(height: 10),
 
             Row(
               children: [
                 const Text('นาทีต่อคิว: '),
                 Expanded(
                   child: Slider(
-                    value: _minutesPerQueue.toDouble().clamp(5, 120),
+                    value: _minutesPerQueue.toDouble(),
                     min: 5,
                     max: 120,
                     divisions: 23,
-                    label: "$_minutesPerQueue",
-                    onChanged: (v) => setState(() => _minutesPerQueue = v.toInt()),
+                    label: '$_minutesPerQueue',
+                    onChanged: (v) =>
+                        setState(() => _minutesPerQueue = v.toInt()),
                   ),
                 ),
-                Text("$_minutesPerQueue นาที"),
+                Text('$_minutesPerQueue นาที'),
               ],
             ),
-            const SizedBox(height: 20),
 
+            const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: (_startTime != null) ? _saveToQueueManager : null,
+              onPressed: _startTime == null ? null : _save,
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
                 backgroundColor: const Color(0xFF4CAF93),
               ),
-              child: const Text('บันทึกคิว', style: TextStyle(fontSize: 18)),
+              child: const Text(
+                'บันทึกคิว',
+                style: TextStyle(fontSize: 18),
+              ),
             ),
-            const SizedBox(height: 20),
 
+            const SizedBox(height: 20),
             if (_generatedTimes.isNotEmpty)
-              const Text("เวลาคิวที่กำหนด:", style: TextStyle(fontWeight: FontWeight.bold)),
-            for (var e in _generatedTimes) Text(e),
+              const Text(
+                'เวลาคิวที่กำหนด:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            for (final t in _generatedTimes) Text(t),
           ],
         ),
       ),
