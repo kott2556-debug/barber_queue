@@ -76,10 +76,11 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F7F6),
       appBar: AppBar(
-        title: const Text("ร้านตัดผมชาย"),
+        title: const Text("ลับแล BARBER"),
         centerTitle: true,
-        backgroundColor: const Color(0xFFE6F4EF),
+        backgroundColor: const Color.fromARGB(255, 10, 158, 106),
         elevation: 0,
+        foregroundColor: Colors.white
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),

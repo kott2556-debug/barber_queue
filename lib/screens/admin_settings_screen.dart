@@ -106,7 +106,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
       appBar: AppBar(
         title: const Text("ตั้งค่าระบบ Admin"),
         centerTitle: true,
-        backgroundColor: const Color(0xFF4CAF93),
+        backgroundColor: const Color.fromARGB(255, 14, 172, 127),
         foregroundColor: Colors.white,
       ),
       body: ListView(

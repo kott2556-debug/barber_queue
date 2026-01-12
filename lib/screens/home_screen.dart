@@ -13,8 +13,9 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('หน้าหลัก'),
         centerTitle: true,
-        backgroundColor: const Color(0xFFE6F4EF),
+        backgroundColor: const Color.fromARGB(255, 9, 160, 107),
         elevation: 0,
+        foregroundColor: Colors.white
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),

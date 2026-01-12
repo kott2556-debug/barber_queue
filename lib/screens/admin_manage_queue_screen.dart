@@ -13,7 +13,7 @@ class AdminManageQueueScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('จัดการคิว Admin'),
         centerTitle: true,
-        backgroundColor: const Color(0xFF4CAF93),
+        backgroundColor: const Color.fromARGB(255, 20, 175, 131),
         foregroundColor: Colors.white
       ),
       body: StreamBuilder<QuerySnapshot>(

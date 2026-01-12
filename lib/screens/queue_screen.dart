@@ -17,7 +17,8 @@ class QueueScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('คิวของฉัน'),
         centerTitle: true,
-        backgroundColor: const Color(0xFF4CAF93),
+        backgroundColor: const Color.fromARGB(255, 12, 158, 117),
+        foregroundColor: Colors.white
       ),
       body: userPhone == null
           ? const Center(child: Text('ไม่พบข้อมูลผู้ใช้'))

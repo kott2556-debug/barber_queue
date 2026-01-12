@@ -12,13 +12,13 @@ class QueueManager extends ChangeNotifier {
 
   QueueManager._internal() {
     _listenBookingStatus();
-    _listenAvailableTimes(); // 🔥 ฟังเวลาคิวจาก Firestore
+    _listenQueueSettings(); // 🔥 ฟังทั้งเวลา + config
   }
 
   final FirestoreService _firestore = FirestoreService();
 
   StreamSubscription<DocumentSnapshot>? _bookingStatusSub;
-  StreamSubscription<DocumentSnapshot>? _availableTimesSub;
+  StreamSubscription<DocumentSnapshot>? _queueSettingsSub;
 
   // --------------------
   // ผู้ใช้ปัจจุบัน
@@ -39,10 +39,19 @@ class QueueManager extends ChangeNotifier {
   }
 
   // --------------------
-  // เวลาที่เปิดให้จอง (จาก Firestore เท่านั้น)
+  // เวลาที่เปิดให้จอง
   // --------------------
   final List<String> _availableTimes = [];
   List<String> get availableTimes => List.unmodifiable(_availableTimes);
+
+  // --------------------
+  // 🧠 ค่า config ล่าสุด (Admin)
+  // --------------------
+  int _totalQueues = 10;
+  int _minutesPerQueue = 30;
+
+  int get totalQueues => _totalQueues;
+  int get minutesPerQueue => _minutesPerQueue;
 
   // --------------------
   // 🏷️ แปลงเวลา → ป้ายคิว
@@ -54,28 +63,37 @@ class QueueManager extends ChangeNotifier {
   }
 
   // --------------------
-  // 🔥 Admin บันทึกเวลาคิว
+  // 🔥 Admin บันทึกเวลา + config
   // --------------------
-  Future<void> saveAvailableTimes(List<String> times) async {
+  Future<void> saveQueueSettings({
+    required List<String> times,
+    required int totalQueues,
+    required int minutesPerQueue,
+  }) async {
     _availableTimes
       ..clear()
       ..addAll(times);
+
+    _totalQueues = totalQueues;
+    _minutesPerQueue = minutesPerQueue;
 
     await FirebaseFirestore.instance
         .collection('system_settings')
         .doc('queue_times')
         .set({
       'times': times,
+      'totalQueues': totalQueues,
+      'minutesPerQueue': minutesPerQueue,
     });
 
     notifyListeners();
   }
 
   // --------------------
-  // 🔥 Sync เวลาคิวจาก Firestore (Realtime)
+  // 🔥 Sync เวลา + config จาก Firestore
   // --------------------
-  void _listenAvailableTimes() {
-    _availableTimesSub = FirebaseFirestore.instance
+  void _listenQueueSettings() {
+    _queueSettingsSub = FirebaseFirestore.instance
         .collection('system_settings')
         .doc('queue_times')
         .snapshots()
@@ -83,14 +101,21 @@ class QueueManager extends ChangeNotifier {
       if (!doc.exists) return;
 
       final data = doc.data() as Map<String, dynamic>;
+
       final List<dynamic>? times = data['times'];
+      final int? tq = data['totalQueues'];
+      final int? mpq = data['minutesPerQueue'];
 
       if (times != null) {
         _availableTimes
           ..clear()
           ..addAll(times.cast<String>());
-        notifyListeners();
       }
+
+      if (tq != null) _totalQueues = tq;
+      if (mpq != null) _minutesPerQueue = mpq;
+
+      notifyListeners();
     });
   }
 
@@ -143,7 +168,7 @@ class QueueManager extends ChangeNotifier {
   @override
   void dispose() {
     _bookingStatusSub?.cancel();
-    _availableTimesSub?.cancel();
+    _queueSettingsSub?.cancel();
     super.dispose();
   }
 }

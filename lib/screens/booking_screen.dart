@@ -29,8 +29,9 @@ class _BookingScreenState extends State<BookingScreen> {
           appBar: AppBar(
             title: const Text("จองคิว"),
             centerTitle: true,
-            backgroundColor: const Color(0xFFE6F4EF),
+            backgroundColor: const Color.fromARGB(255, 8, 158, 106),
             elevation: 0,
+            foregroundColor: Colors.white,
           ),
           body: qm.isOpenForBooking
               ? StreamBuilder<List<String>>(
@@ -43,7 +44,9 @@ class _BookingScreenState extends State<BookingScreen> {
                       itemCount: times.length,
                       itemBuilder: (context, index) {
                         final time = times[index];
-                        final queueLabel = qm.getQueueLabel(time); // ✅ ใช้จาก QM
+                        final queueLabel = qm.getQueueLabel(
+                          time,
+                        ); // ✅ ใช้จาก QM
                         final isBooked = bookedTimes.contains(time);
                         final isSelected = selectedTime == time;
 
@@ -55,8 +58,8 @@ class _BookingScreenState extends State<BookingScreen> {
                             color: isBooked
                                 ? Colors.grey.shade300
                                 : isSelected
-                                    ? const Color(0xFFDFF3EC)
-                                    : Colors.white,
+                                ? const Color(0xFFDFF3EC)
+                                : Colors.white,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(24),
                               onTap: isBooked
@@ -64,7 +67,9 @@ class _BookingScreenState extends State<BookingScreen> {
                                   : () => setState(() => selectedTime = time),
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    vertical: 22, horizontal: 20),
+                                  vertical: 22,
+                                  horizontal: 20,
+                                ),
                                 child: Row(
                                   children: [
                                     Column(
@@ -92,11 +97,13 @@ class _BookingScreenState extends State<BookingScreen> {
                                     ),
                                     const Spacer(),
                                     if (isBooked)
-                                      const Icon(Icons.lock,
-                                          color: Colors.grey)
+                                      const Icon(Icons.lock, color: Colors.grey)
                                     else if (isSelected)
-                                      const Icon(Icons.check_circle,
-                                          color: Color(0xFF4CAF93), size: 28),
+                                      const Icon(
+                                        Icons.check_circle,
+                                        color: Color(0xFF4CAF93),
+                                        size: 28,
+                                      ),
                                   ],
                                 ),
                               ),
@@ -110,16 +117,14 @@ class _BookingScreenState extends State<BookingScreen> {
               : Center(
                   child: Text(
                     "ขณะนี้ปิดรับคิวชั่วคราว",
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey.shade700,
-                    ),
+                    style: TextStyle(fontSize: 18, color: Colors.grey.shade700),
                   ),
                 ),
           bottomNavigationBar: Padding(
             padding: const EdgeInsets.all(16),
             child: ElevatedButton(
-              onPressed: (!qm.isOpenForBooking ||
+              onPressed:
+                  (!qm.isOpenForBooking ||
                       selectedTime == null ||
                       _isSubmitting)
                   ? null
@@ -131,8 +136,7 @@ class _BookingScreenState extends State<BookingScreen> {
                           qm.currentUserPhone == null) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text("กรุณา Login ใหม่")),
+                            const SnackBar(content: Text("กรุณา Login ใหม่")),
                           );
                         }
                         setState(() => _isSubmitting = false);
@@ -153,7 +157,8 @@ class _BookingScreenState extends State<BookingScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
-                                "คิวนี้ถูกจองแล้ว หรือ คุณมีคิวอยู่แล้ว"),
+                              "คิวนี้ถูกจองแล้ว หรือ คุณมีคิวอยู่แล้ว",
+                            ),
                           ),
                         );
                         setState(() => _isSubmitting = false);
@@ -163,19 +168,25 @@ class _BookingScreenState extends State<BookingScreen> {
                 minimumSize: const Size(double.infinity, 56),
                 backgroundColor: const Color(0xFF4CAF93),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
               child: _isSubmitting
                   ? const SizedBox(
                       width: 24,
                       height: 24,
                       child: CircularProgressIndicator(
-                          strokeWidth: 3, color: Colors.white),
+                        strokeWidth: 3,
+                        color: Colors.white,
+                      ),
                     )
                   : const Text(
                       "ยืนยันจองคิว",
                       style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white, // 👈 เพิ่มบรรทัดนี้
+                      ),
                     ),
             ),
           ),
