@@ -10,70 +10,37 @@ class AdminSetTimeScreen extends StatefulWidget {
 }
 
 class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
-  TimeOfDay? _startTime;
   int _numQueues = 10;
   int _minutesPerQueue = 30;
 
   final QueueManager _qm = QueueManager();
-
-  List<String> _generatedTimes = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadExistingTimes();
-  }
-
-  void _loadExistingTimes() {
-    final times = _qm.availableTimes;
-    if (times.isEmpty) return;
-
-    _generatedTimes = List.from(times);
-
-    final first = times.first.split(':');
-    _startTime = TimeOfDay(
-      hour: int.parse(first[0]),
-      minute: int.parse(first[1]),
-    );
-
-    _numQueues = times.length;
-
-    if (times.length >= 2) {
-      final firstMin =
-          int.parse(times[0].split(':')[0]) * 60 +
-          int.parse(times[0].split(':')[1]);
-      final secondMin =
-          int.parse(times[1].split(':')[0]) * 60 +
-          int.parse(times[1].split(':')[1]);
-
-      _minutesPerQueue = (secondMin - firstMin).clamp(5, 120);
-    }
-  }
-
-  void _generateTimes() {
-    if (_startTime == null) return;
-
-    _generatedTimes = QueueTimeCalculator.generateTimes(
-      startTime: _startTime!,
-      count: _numQueues,
-      minutesPerQueue: _minutesPerQueue,
-    );
-  }
+  List<String> _previewTimes = [];
 
   Future<void> _save() async {
-    _generateTimes();
-    await _qm.saveAvailableTimes(_generatedTimes);
+    final times = QueueTimeCalculator.generateWithLunchAnchor(
+      totalQueues: _numQueues,
+      minutesPerQueue: _minutesPerQueue,
+    );
+
+    await _qm.saveAvailableTimes(times);
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('บันทึกเวลารับคิวเรียบร้อย')),
     );
 
-    setState(() {});
+    setState(() {
+      _previewTimes = times;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final morningTimes =
+        _previewTimes.where((t) => t.compareTo('12:00') < 0).toList();
+    final afternoonTimes =
+        _previewTimes.where((t) => t.compareTo('13:00') >= 0).toList();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('ตั้งเวลารับคิว'),
@@ -86,25 +53,11 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ListTile(
-              title: const Text('เวลาเริ่มรับคิว'),
-              subtitle: Text(
-                _startTime != null
-                    ? _startTime!.format(context)
-                    : 'ยังไม่ได้เลือก',
-              ),
-              trailing: ElevatedButton(
-                onPressed: () async {
-                  final t = await showTimePicker(
-                    context: context,
-                    initialTime:
-                        _startTime ?? const TimeOfDay(hour: 9, minute: 0),
-                  );
-                  if (t != null) setState(() => _startTime = t);
-                },
-                child: const Text('เลือก'),
-              ),
+            const Text(
+              'หยุดพักเที่ยง 12:00 – 13:00',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
+
             const SizedBox(height: 20),
 
             Row(
@@ -113,12 +66,13 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
                 Expanded(
                   child: Slider(
                     value: _numQueues.toDouble(),
-                    min: 1,
+                    min: 10,
                     max: 20,
-                    divisions: 19,
+                    divisions: 10,
                     label: '$_numQueues',
-                    onChanged: (v) =>
-                        setState(() => _numQueues = v.toInt()),
+                    onChanged: (v) {
+                      setState(() => _numQueues = v.round());
+                    },
                   ),
                 ),
                 Text('$_numQueues'),
@@ -131,12 +85,13 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
                 Expanded(
                   child: Slider(
                     value: _minutesPerQueue.toDouble(),
-                    min: 5,
-                    max: 120,
-                    divisions: 23,
+                    min: 20,
+                    max: 60,
+                    divisions: 40,
                     label: '$_minutesPerQueue',
-                    onChanged: (v) =>
-                        setState(() => _minutesPerQueue = v.toInt()),
+                    onChanged: (v) {
+                      setState(() => _minutesPerQueue = v.round());
+                    },
                   ),
                 ),
                 Text('$_minutesPerQueue นาที'),
@@ -144,25 +99,65 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
             ),
 
             const SizedBox(height: 20),
+
             ElevatedButton(
-              onPressed: _startTime == null ? null : _save,
+              onPressed: _save,
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
                 backgroundColor: const Color(0xFF4CAF93),
               ),
               child: const Text(
                 'บันทึกคิว',
-                style: TextStyle(fontSize: 18),
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
 
-            const SizedBox(height: 20),
-            if (_generatedTimes.isNotEmpty)
+            const SizedBox(height: 24),
+
+            if (_previewTimes.isNotEmpty) ...[
               const Text(
-                'เวลาคิวที่กำหนด:',
+                'ตัวอย่างเวลาคิว',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
-            for (final t in _generatedTimes) Text(t),
+              const SizedBox(height: 12),
+
+              // -------- เช้า --------
+              for (final t in morningTimes)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Text(t),
+                ),
+
+              const SizedBox(height: 12),
+
+              // -------- พักเที่ยง --------
+              Row(
+                children: const [
+                  Expanded(child: Divider()),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(
+                      'พักเที่ยง 12:00 – 13:00',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                  Expanded(child: Divider()),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              // -------- บ่าย --------
+              for (final t in afternoonTimes)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Text(t),
+                ),
+            ],
           ],
         ),
       ),

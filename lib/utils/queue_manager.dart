@@ -1,7 +1,7 @@
 import 'dart:async';
-import '../services/firestore_service.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../services/firestore_service.dart';
 
 class QueueManager extends ChangeNotifier {
   // --------------------
@@ -11,7 +11,6 @@ class QueueManager extends ChangeNotifier {
   factory QueueManager() => _instance;
 
   QueueManager._internal() {
-    _initDefaultTimes();
     _listenBookingStatus();
     _listenAvailableTimes(); // 🔥 ฟังเวลาคิวจาก Firestore
   }
@@ -30,18 +29,23 @@ class QueueManager extends ChangeNotifier {
   String? get currentUserName => _currentUserName;
   String? get currentUserPhone => _currentUserPhone;
 
-  void setCurrentUser({required String name, required String phone}) {
+  void setCurrentUser({
+    required String name,
+    required String phone,
+  }) {
     _currentUserName = name;
     _currentUserPhone = phone;
     notifyListeners();
   }
 
   // --------------------
-  // เวลาที่เปิดให้จอง
+  // เวลาที่เปิดให้จอง (จาก Firestore เท่านั้น)
   // --------------------
   final List<String> _availableTimes = [];
-  List<String> get availableTimes => List.unmodifiable(_availableTimes);  // --------------------
-  // 🏷️ แปลงเวลาเป็นป้ายคิว (เช่น คิว 1, คิว 2)
+  List<String> get availableTimes => List.unmodifiable(_availableTimes);
+
+  // --------------------
+  // 🏷️ แปลงเวลา → ป้ายคิว
   // --------------------
   String getQueueLabel(String time) {
     final index = _availableTimes.indexOf(time);
@@ -49,25 +53,9 @@ class QueueManager extends ChangeNotifier {
     return 'คิว ${index + 1}';
   }
 
-
-  void _initDefaultTimes() {
-    if (_availableTimes.isEmpty) {
-      _availableTimes.addAll([
-        '07:00',
-        '08:00',
-        '09:00',
-        '10:00',
-        '11:00',
-        '13:00',
-        '14:00',
-        '15:00',
-        '16:00',
-        '17:00',
-      ]);
-    }
-  }
-
-  /// 🔥 Admin บันทึกเวลาคิว
+  // --------------------
+  // 🔥 Admin บันทึกเวลาคิว
+  // --------------------
   Future<void> saveAvailableTimes(List<String> times) async {
     _availableTimes
       ..clear()
@@ -83,7 +71,9 @@ class QueueManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 🔥 ฟังเวลาคิวจาก Firestore (ทุกเครื่อง sync พร้อมกัน)
+  // --------------------
+  // 🔥 Sync เวลาคิวจาก Firestore (Realtime)
+  // --------------------
   void _listenAvailableTimes() {
     _availableTimesSub = FirebaseFirestore.instance
         .collection('system_settings')
@@ -116,11 +106,11 @@ class QueueManager extends ChangeNotifier {
         .doc('booking')
         .snapshots()
         .listen((doc) {
-      if (doc.exists) {
-        final data = doc.data() as Map<String, dynamic>;
-        _isOpenForBooking = data['isOpen'] ?? true;
-        notifyListeners();
-      }
+      if (!doc.exists) return;
+
+      final data = doc.data() as Map<String, dynamic>;
+      _isOpenForBooking = data['isOpen'] ?? true;
+      notifyListeners();
     });
   }
 
@@ -128,11 +118,14 @@ class QueueManager extends ChangeNotifier {
     await FirebaseFirestore.instance
         .collection('system_settings')
         .doc('booking')
-        .set({'isOpen': open}, SetOptions(merge: true));
+        .set(
+      {'isOpen': open},
+      SetOptions(merge: true),
+    );
   }
 
   // --------------------
-  // เพิ่มคิว
+  // ➕ เพิ่มคิว (Transaction)
   // --------------------
   Future<void> addBooking({
     required String name,
@@ -143,7 +136,7 @@ class QueueManager extends ChangeNotifier {
       name: name,
       phone: phone,
       time: time,
-      queueLabel: 'คิว ${_availableTimes.indexOf(time) + 1}',
+      queueLabel: getQueueLabel(time),
     );
   }
 
