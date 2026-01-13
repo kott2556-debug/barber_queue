@@ -40,7 +40,8 @@ class MyApp extends StatelessWidget {
         '/admin': (_) => const AdminDashboard(),
         '/admin/manage': (_) => AdminManageQueueScreen(),
         '/admin/settings': (_) => const AdminSettingsScreen(),
-        '/admin/customer-history': (_) => const AdminCustomerHistoryPage(), // ✅ เพิ่มหน้าใหม่
+        '/admin/customer-history': (_) =>
+            const AdminCustomerHistoryPage(), // ✅ เพิ่มหน้าใหม่
       },
     );
   }
