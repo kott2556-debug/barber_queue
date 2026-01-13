@@ -63,7 +63,7 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
         centerTitle: true,
         foregroundColor: Colors.white,
       ),
-      body: Padding(
+      body: SingleChildScrollView( // ✅ เพิ่มตรงนี้
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,7 +72,6 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
               'หยุดพักเที่ยง 12:00 – 13:00',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-
             const SizedBox(height: 20),
 
             // ---------- จำนวนคิว ----------

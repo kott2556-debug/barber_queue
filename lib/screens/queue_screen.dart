@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/firestore_service.dart';
 import '../utils/queue_manager.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class QueueScreen extends StatefulWidget {
   const QueueScreen({super.key});
@@ -23,9 +23,7 @@ class _QueueScreenState extends State<QueueScreen> {
 
     // 🔁 รีเฟรชทุก 5 นาที
     _refreshTimer = Timer.periodic(const Duration(minutes: 5), (_) {
-      if (mounted) {
-        setState(() {});
-      }
+      if (mounted) setState(() {});
     });
   }
 
@@ -35,7 +33,6 @@ class _QueueScreenState extends State<QueueScreen> {
     super.dispose();
   }
 
-  /// คืนค่า object เพื่อบอกทั้งข้อความ + สถานะ
   Map<String, dynamic>? getCountdown(String time) {
     final now = DateTime.now();
     final parts = time.split(':');
@@ -53,12 +50,9 @@ class _QueueScreenState extends State<QueueScreen> {
 
     if (diffMinutes > 30) return null;
 
-    if (diffMinutes <= 4) {
-      return {'text': 'ถึงเวลาเข้ารับบริการแล้ว', 'isFinal': true};
-    }
+    if (diffMinutes <= 4) return {'text': 'ถึงเวลาเข้ารับบริการแล้ว', 'isFinal': true};
 
     final stepMinute = ((diffMinutes / 5).floor()) * 5;
-
     return {'text': 'อีก $stepMinute นาที จะถึงคิวคุณ', 'isFinal': false};
   }
 
@@ -73,56 +67,55 @@ class _QueueScreenState extends State<QueueScreen> {
         backgroundColor: const Color.fromARGB(255, 12, 158, 117),
         foregroundColor: Colors.white,
       ),
-      body: SafeArea(
-        child: userPhone == null
-            ? const Center(child: Text('ไม่พบข้อมูลผู้ใช้'))
-            : StreamBuilder<QuerySnapshot>(
-                stream: firestoreService.streamBookings(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
+      body: userPhone == null
+          ? const Center(child: Text('ไม่พบข้อมูลผู้ใช้'))
+          : StreamBuilder<QuerySnapshot>(
+              stream: firestoreService.streamBookings(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-                  if (!snapshot.hasData) {
-                    return const Center(child: Text('ไม่พบข้อมูลคิว'));
-                  }
+                if (!snapshot.hasData) {
+                  return const Center(child: Text('ไม่พบข้อมูลคิว'));
+                }
 
-                  final userQueues = snapshot.data!.docs.where((doc) {
-                    final data = doc.data() as Map<String, dynamic>;
-                    return data['phone'] == userPhone;
-                  }).toList();
+                final userQueues = snapshot.data!.docs.where((doc) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  return data['phone'] == userPhone;
+                }).toList();
 
-                  if (userQueues.isEmpty) {
-                    return const Center(child: Text('คุณยังไม่มีคิว'));
-                  }
+                if (userQueues.isEmpty) {
+                  return const Center(child: Text('คุณยังไม่มีคิว'));
+                }
 
-                  return LayoutBuilder(
-                    builder: (context, constraints) {
-                      return SingleChildScrollView(
-                        padding: const EdgeInsets.all(16),
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minHeight: constraints.maxHeight,
-                          ),
+                final data = userQueues.last.data() as Map<String, dynamic>;
+                final queueLabel = data['queueLabel'];
+                final name = data['name'] ?? '-';
+                final time = data['time'];
+                final countdown = time != null ? getCountdown(time) : null;
+                final bool isFinal = countdown != null && countdown['isFinal'] == true;
+
+                final Color bgColor = isFinal
+                    ? Colors.red.withAlpha(38)
+                    : Colors.blue.withAlpha(38);
+                final Color textColor = isFinal ? Colors.red : Colors.blue;
+
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.all(20),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
+                        ),
+                        child: IntrinsicHeight(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: userQueues.map((doc) {
-                              final data = doc.data() as Map<String, dynamic>;
-                              final queueLabel = data['queueLabel'];
-                              final name = data['name'] ?? '-';
-                              final time = data['time'];
-                              final countdown =
-                                  time != null ? getCountdown(time) : null;
-                              final bool isFinal =
-                                  countdown != null && countdown['isFinal'] == true;
-                              final Color bgColor = isFinal
-                                  ? Colors.red.withAlpha(38)
-                                  : Colors.blue.withAlpha(38);
-                              final Color textColor = isFinal ? Colors.red : Colors.blue;
-
-                              return Card(
+                            mainAxisAlignment: MainAxisAlignment.center, // ✅ อยู่กลางแนวตั้ง
+                            children: [
+                              Card(
                                 elevation: 6,
-                                margin: const EdgeInsets.only(bottom: 16),
+                                margin: const EdgeInsets.all(20),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),
                                 ),
@@ -153,7 +146,7 @@ class _QueueScreenState extends State<QueueScreen> {
                                         'เวลาที่จอง $time',
                                         style: const TextStyle(fontSize: 16),
                                       ),
-                                      const SizedBox(height: 16),
+                                      const SizedBox(height: 20),
                                       if (countdown != null)
                                         Container(
                                           padding: const EdgeInsets.symmetric(
@@ -178,16 +171,16 @@ class _QueueScreenState extends State<QueueScreen> {
                                     ],
                                   ),
                                 ),
-                              );
-                            }).toList(),
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    },
-                  );
-                },
-              ),
-      ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
     );
   }
 }
