@@ -79,7 +79,7 @@ class AdminManageQueueScreen extends StatelessWidget {
                     children: [
                       // ---------- เลขคิว ----------
                       Container(
-                        width: 44,
+                        width: 55,
                         height: 32,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
@@ -128,7 +128,7 @@ class AdminManageQueueScreen extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            // เวลาอยู่กึ่งกลาง Card
+                            // เวลาชิดขวา Card
                             Align(
                               alignment: Alignment.centerRight,
                               child: Text(
