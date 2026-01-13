@@ -108,71 +108,74 @@ class _QueueScreenState extends State<QueueScreen> {
                       child: ConstrainedBox(
                         constraints: BoxConstraints(minHeight: constraints.maxHeight),
                         child: IntrinsicHeight(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center, // กล่องอยู่กลางแนวนอน
-                            children: [
-                              Card(
-                                elevation: 6,
-                                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(24),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.start, // ข้อความชิดซ้าย
-                                    children: [
-                                      if (queueLabel != null)
-                                        Text(
-                                          queueLabel,
-                                          style: const TextStyle(
-                                            fontSize: 26,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF4CAF93),
-                                          ),
-                                        ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        name,
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Text(
-                                        'เวลาที่จอง $time',
-                                        style: const TextStyle(fontSize: 16),
-                                      ),
-                                      const SizedBox(height: 20),
-                                      if (countdown != null)
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 12,
-                                            horizontal: 24,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: bgColor,
-                                            borderRadius: BorderRadius.circular(20),
-                                          ),
-                                          child: Text(
-                                            countdown['text'],
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: isFinal
-                                                  ? FontWeight.bold
-                                                  : FontWeight.w600,
-                                              color: textColor,
+                          
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center, // กล่องอยู่กลางแนวนอน
+                              children: [
+                                Card(
+                                  elevation: 6,
+                                  margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(24),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.start, // ข้อความชิดซ้าย
+                                      children: [
+                                        if (queueLabel != null)
+                                          Text(
+                                            queueLabel,
+                                            style: const TextStyle(
+                                              fontSize: 26,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFF4CAF93),
                                             ),
                                           ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          name,
+                                          style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                    ],
+                                        const SizedBox(height: 10),
+                                        Text(
+                                          'เวลาที่จอง $time',
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
+                                        const SizedBox(height: 20),
+                                        if (countdown != null)
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 12,
+                                              horizontal: 24,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: bgColor,
+                                              borderRadius: BorderRadius.circular(20),
+                                            ),
+                                            child: Text(
+                                              countdown['text'],
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: isFinal
+                                                    ? FontWeight.bold
+                                                    : FontWeight.w600,
+                                                color: textColor,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
