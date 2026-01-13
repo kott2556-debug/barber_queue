@@ -13,99 +13,101 @@ class AdminDashboard extends StatelessWidget {
         backgroundColor: const Color(0xFF1F3C34),
         elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ---------- HEADER ----------
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE6F4EF),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                children: const [
-                  CircleAvatar(
-                    radius: 26,
-                    backgroundColor: Color(0xFF4CAF93),
-                    child: Icon(
-                      Icons.admin_panel_settings,
-                      color: Colors.white,
-                      size: 30,
+      body: SingleChildScrollView( // ✅ เพิ่มให้เลื่อนขึ้นลงได้
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ---------- HEADER ----------
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE6F4EF),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  children: const [
+                    CircleAvatar(
+                      radius: 26,
+                      backgroundColor: Color(0xFF4CAF93),
+                      child: Icon(
+                        Icons.admin_panel_settings,
+                        color: Colors.white,
+                        size: 30,
+                      ),
                     ),
-                  ),
-                  SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "ผู้ดูแลระบบ",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                    SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "ผู้ดูแลระบบ",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      Text(
-                        "จัดการคิวและระบบร้าน",
-                        style: TextStyle(color: Colors.black54),
-                      ),
-                    ],
-                  ),
-                ],
+                        Text(
+                          "จัดการคิวและระบบร้าน",
+                          style: TextStyle(color: Colors.black54),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
 
-            const SizedBox(height: 30),
+              const SizedBox(height: 30),
 
-            const Text(
-              "เมนูหลัก",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
+              const Text(
+                "เมนูหลัก",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            // ---------- MENU : ประวัติลูกค้า ----------
-            _adminMenuCard(
-              context: context,
-              icon: Icons.history,
-              title: "ประวัติลูกค้า",
-              subtitle: "รายละเอียด • การเข้าใช้บริการ",
-              color: const Color(0xFF4CAF93), // สีเดิม
-              onTap: () {
-                Navigator.pushNamed(context, '/admin/customer-history');
-              },
-            ),
+              // ---------- MENU : ประวัติลูกค้า ----------
+              _adminMenuCard(
+                context: context,
+                icon: Icons.history,
+                title: "ประวัติลูกค้า",
+                subtitle: "รายละเอียด • การเข้าใช้บริการ",
+                color: const Color(0xFF4CAF93),
+                onTap: () {
+                  Navigator.pushNamed(context, '/admin/customer-history');
+                },
+              ),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // ---------- MENU : จัดการคิว ----------
-            _adminMenuCard(
-              context: context,
-              icon: Icons.edit_calendar,
-              title: "จัดการคิว",
-              subtitle: "เรียกคิว • ลบคิว • จบวัน",
-              color: const Color(0xFF3F7F6A),
-              onTap: () {
-                Navigator.pushNamed(context, '/admin/manage');
-              },
-            ),
+              // ---------- MENU : จัดการคิว ----------
+              _adminMenuCard(
+                context: context,
+                icon: Icons.edit_calendar,
+                title: "จัดการคิว",
+                subtitle: "เรียกคิว • ลบคิว • จบวัน",
+                color: const Color(0xFF3F7F6A),
+                onTap: () {
+                  Navigator.pushNamed(context, '/admin/manage');
+                },
+              ),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // ---------- MENU : ตั้งค่า ----------
-            _adminMenuCard(
-              context: context,
-              icon: Icons.settings,
-              title: "ตั้งค่าระบบ",
-              subtitle: "ตั้งค่าเวลาเปิดร้าน / ระบบ",
-              color: const Color(0xFF2F5D50),
-              onTap: () {
-                Navigator.pushNamed(context, '/admin/settings');
-              },
-            ),
-          ],
+              // ---------- MENU : ตั้งค่า ----------
+              _adminMenuCard(
+                context: context,
+                icon: Icons.settings,
+                title: "ตั้งค่าระบบ",
+                subtitle: "ตั้งค่าเวลาเปิดร้าน / ระบบ",
+                color: const Color(0xFF2F5D50),
+                onTap: () {
+                  Navigator.pushNamed(context, '/admin/settings');
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

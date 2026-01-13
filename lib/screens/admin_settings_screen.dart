@@ -40,9 +40,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     qm.setOpenForBooking(!qm.isOpenForBooking);
   }
 
-  // ===============================
-  // ล้างคิวทั้งหมด
-  // ===============================
   void _confirmClearAllQueues() {
     showDialog(
       context: context,
@@ -60,13 +57,9 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
               Navigator.pop(dialogContext);
-
               final messenger = ScaffoldMessenger.of(context);
-
               await firestore.clearAllQueues();
-
               if (!mounted) return;
-
               messenger.showSnackBar(
                 const SnackBar(content: Text("ล้างคิวทั้งหมดเรียบร้อย")),
               );
@@ -78,9 +71,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     );
   }
 
-  // ===============================
-  // popup เลือกล้างคิว 1 คิว
-  // ===============================
   void _openClearSingleQueuePopup() {
     showDialog(
       context: context,
@@ -94,31 +84,20 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
               if (!snapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
               }
-
               final docs = snapshot.data!.docs;
-
-              if (docs.isEmpty) {
-                return const Text("ไม่มีคิวในระบบ");
-              }
-
+              if (docs.isEmpty) return const Text("ไม่มีคิวในระบบ");
               final sortedDocs = [...docs];
               sortedDocs.sort((a, b) {
                 int getNum(String s) =>
-                    int.tryParse(
-                      RegExp(r'\d+').firstMatch(s)?.group(0) ?? '',
-                    ) ??
-                    999;
-                return getNum(a['queueLabel'])
-                    .compareTo(getNum(b['queueLabel']));
+                    int.tryParse(RegExp(r'\d+').firstMatch(s)?.group(0) ?? '') ?? 999;
+                return getNum(a['queueLabel']).compareTo(getNum(b['queueLabel']));
               });
-
               return ListView.builder(
                 shrinkWrap: true,
                 itemCount: sortedDocs.length,
                 itemBuilder: (context, index) {
                   final doc = sortedDocs[index];
                   final data = doc.data() as Map<String, dynamic>;
-
                   return ListTile(
                     title: Text(
                       data['queueLabel'] ?? '',
@@ -151,9 +130,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     );
   }
 
-  // ===============================
-  // popup ยืนยันล้างคิวเดียว
-  // ===============================
   void _confirmClearSingleQueue({
     required String bookingId,
     required String queueLabel,
@@ -176,17 +152,13 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
               Navigator.pop(dialogContext);
-
               final messenger = ScaffoldMessenger.of(context);
-
               await firestore.clearSingleQueue(
                 bookingId: bookingId,
                 phone: phone,
                 time: time,
               );
-
               if (!mounted) return;
-
               messenger.showSnackBar(
                 SnackBar(content: Text("ล้าง $queueLabel เรียบร้อย")),
               );
@@ -198,9 +170,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     );
   }
 
-  // ===============================
-  // UI
-  // ===============================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -210,106 +179,111 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
         backgroundColor: const Color.fromARGB(255, 14, 172, 127),
         foregroundColor: Colors.white,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          ListTile(
-            leading: const Icon(Icons.access_time, size: 45, color: Colors.blue),
-            title: const Text(
-              "ตั้งค่าเวลารับคิว",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: const Text("กำหนดช่วงเวลาที่เปิดจอง"),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const AdminSetTimeScreen(),
-                ),
-              );
-            },
-          ),
-
-          const Divider(),
-
-          ListTile(
-            leading: Icon(
-              isClosedForBooking ? Icons.lock_open : Icons.block,
-              color: isClosedForBooking ? Colors.green : Colors.red,
-              size: 45,
-            ),
-            title: Text(
-              isClosedForBooking ? "เปิดรับคิว" : "ปิดรับคิว",
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Text(
-              isClosedForBooking
-                  ? "สถานะ: ปิดอยู่ (แตะเพื่อเปิด)"
-                  : "สถานะ: เปิดอยู่ (แตะเพื่อปิด)",
-            ),
-            onTap: _toggleBooking,
-          ),
-
-          const Divider(),
-
-          ListTile(
-            leading: Container(
-              width: 45,
-              height: 45,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.red, width: 2),
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  const Icon(Icons.delete, color: Colors.red),
-                  Positioned(
-                    top: 4,
-                    right: 4,
-                    child: Container(
-                      width: 16,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                        border: Border.all(color: Colors.red, width: 2),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.access_time, size: 45, color: Colors.blue),
+                      title: const Text(
+                        "ตั้งค่าเวลารับคิว",
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      alignment: Alignment.center,
-                      child: const Text(
-                        '1',
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
+                      subtitle: const Text("กำหนดช่วงเวลาที่เปิดจอง"),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AdminSetTimeScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    const Divider(),
+                    ListTile(
+                      leading: Icon(
+                        isClosedForBooking ? Icons.lock_open : Icons.block,
+                        color: isClosedForBooking ? Colors.green : Colors.red,
+                        size: 45,
+                      ),
+                      title: Text(
+                        isClosedForBooking ? "เปิดรับคิว" : "ปิดรับคิว",
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        isClosedForBooking
+                            ? "สถานะ: ปิดอยู่ (แตะเพื่อเปิด)"
+                            : "สถานะ: เปิดอยู่ (แตะเพื่อปิด)",
+                      ),
+                      onTap: _toggleBooking,
+                    ),
+                    const Divider(),
+                    ListTile(
+                      leading: Container(
+                        width: 45,
+                        height: 45,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.red, width: 2),
+                        ),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            const Icon(Icons.delete, color: Colors.red),
+                            Positioned(
+                              top: 4,
+                              right: 4,
+                              child: Container(
+                                width: 16,
+                                height: 16,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white,
+                                  border: Border.all(color: Colors.red, width: 2),
+                                ),
+                                alignment: Alignment.center,
+                                child: const Text(
+                                  '1',
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
+                      title: const Text(
+                        "ล้างคิว 1 คิว",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: const Text("กรณีลูกค้ายกเลิกหรือเปลี่ยนเวลาจอง"),
+                      onTap: _openClearSingleQueuePopup,
                     ),
-                  ),
-                ],
+                    const Divider(),
+                    ListTile(
+                      leading: const Icon(Icons.restart_alt, size: 55, color: Colors.red),
+                      title: const Text(
+                        "ล้างคิวทั้งหมด",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: const Text("ลบข้อมูลคิวลูกค้าทั้งหมด"),
+                      onTap: _confirmClearAllQueues,
+                    ),
+                  ],
+                ),
               ),
-            ),
-            title: const Text(
-              "ล้างคิว 1 คิว",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: const Text("กรณีลูกค้ายกเลิกหรือเปลี่ยนเวลาจอง"),
-            onTap: _openClearSingleQueuePopup,
-          ),
-
-          const Divider(),
-
-          ListTile(
-            leading:
-                const Icon(Icons.restart_alt, size: 55, color: Colors.red),
-            title: const Text(
-              "ล้างคิวทั้งหมด",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: const Text("ลบข้อมูลคิวลูกค้าทั้งหมด"),
-            onTap: _confirmClearAllQueues,
-          ),
-        ],
+            );
+          },
+        ),
       ),
     );
   }

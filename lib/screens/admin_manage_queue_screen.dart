@@ -73,82 +73,117 @@ class AdminManageQueueScreen extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: ListTile(
-                  leading: Container(
-                    width: 44,
-                    height: 32,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: statusColor,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      queueLabel,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  title: Text(data['name'] ?? '-'),
-                  subtitle: Text('เวลา ${data['time'] ?? '-'}'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
                     children: [
-                      // ข้อความ status
-                      Text(
-                        statusText,
-                        style: TextStyle(
+                      // ---------- เลขคิว ----------
+                      Container(
+                        width: 44,
+                        height: 32,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
                           color: statusColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14, // ขนาดเท่ากันทั้งหมด
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          queueLabel,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 12),
 
-                      // ปุ่มเรียกคิว / เสร็จแล้ว
-                      if (status == 'waiting')
-                        ElevatedButton(
-                          onPressed: () async {
-                            await firestoreService.callNextQueueByAdmin(doc.id);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                      // ---------- ชื่อ + เบอร์ ----------
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              data['name'] ?? '-',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              maxLines: 1,
                             ),
-                          ),
-                          child: const Text(
-                            'รอคิว',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                            Text(
+                              data['phone'] ?? '-',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black54,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              maxLines: 1,
                             ),
-                          ),
+                          ],
                         ),
-                      if (status == 'serving')
-                        ElevatedButton(
-                          onPressed: () async {
-                            await firestoreService.finishQueueByAdmin(doc.id);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: const Text(
-                            'เสร็จแล้ว',
+                      ),
+
+                      const SizedBox(width: 12),
+
+                      // ---------- สถานะ + ปุ่ม ----------
+                      Column(
+                        children: [
+                          Text(
+                            statusText,
                             style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white,
+                              color: statusColor,
                               fontWeight: FontWeight.bold,
+                              fontSize: 14,
                             ),
                           ),
-                        ),
+                          const SizedBox(height: 6),
+                          if (status == 'waiting')
+                            ElevatedButton(
+                              onPressed: () async {
+                                await firestoreService.callNextQueueByAdmin(doc.id);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                minimumSize: const Size(80, 32),
+                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                              child: const Text(
+                                'รอคิว',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          if (status == 'serving')
+                            ElevatedButton(
+                              onPressed: () async {
+                                await firestoreService.finishQueueByAdmin(doc.id);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                minimumSize: const Size(100, 32),
+                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                              child: const Text(
+                                'กำลังให้บริการ',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
