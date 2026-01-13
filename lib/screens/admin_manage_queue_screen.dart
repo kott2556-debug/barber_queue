@@ -130,7 +130,7 @@ class AdminManageQueueScreen extends StatelessWidget {
                             ),
                             // เวลาอยู่กึ่งกลาง Card
                             Align(
-                              alignment: Alignment.center,
+                              alignment: Alignment.centerRight,
                               child: Text(
                                 data['time'] ?? '-',
                                 style: const TextStyle(
