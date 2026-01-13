@@ -33,6 +33,7 @@ class _QueueScreenState extends State<QueueScreen> {
     super.dispose();
   }
 
+  /// คืนค่า object เพื่อบอกทั้งข้อความ + สถานะ
   Map<String, dynamic>? getCountdown(String time) {
     final now = DateTime.now();
     final parts = time.split(':');
@@ -96,26 +97,24 @@ class _QueueScreenState extends State<QueueScreen> {
                 final countdown = time != null ? getCountdown(time) : null;
                 final bool isFinal = countdown != null && countdown['isFinal'] == true;
 
-                final Color bgColor = isFinal
-                    ? Colors.red.withAlpha(38)
-                    : Colors.blue.withAlpha(38);
+                final Color bgColor =
+                    isFinal ? Colors.red.withAlpha(38) : Colors.blue.withAlpha(38);
                 final Color textColor = isFinal ? Colors.red : Colors.blue;
 
+                // ✅ ปรับให้กล่องอยู่กลางจอ และเลื่อนขึ้นลงได้
                 return LayoutBuilder(
                   builder: (context, constraints) {
                     return SingleChildScrollView(
-                      padding: const EdgeInsets.all(20),
                       child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: constraints.maxHeight,
-                        ),
+                        constraints: BoxConstraints(minHeight: constraints.maxHeight),
                         child: IntrinsicHeight(
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center, // ✅ อยู่กลางแนวตั้ง
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center, // กล่องอยู่กลางแนวนอน
                             children: [
                               Card(
                                 elevation: 6,
-                                margin: const EdgeInsets.all(20),
+                                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),
                                 ),
@@ -123,6 +122,7 @@ class _QueueScreenState extends State<QueueScreen> {
                                   padding: const EdgeInsets.all(24),
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start, // ข้อความชิดซ้าย
                                     children: [
                                       if (queueLabel != null)
                                         Text(
