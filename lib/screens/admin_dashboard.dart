@@ -18,7 +18,6 @@ class AdminDashboard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             // ---------- HEADER ----------
             Container(
               padding: const EdgeInsets.all(20),
@@ -53,7 +52,7 @@ class AdminDashboard extends StatelessWidget {
                         style: TextStyle(color: Colors.black54),
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
@@ -62,23 +61,20 @@ class AdminDashboard extends StatelessWidget {
 
             const Text(
               "เมนูหลัก",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 20),
 
-            // ---------- MENU : ดูคิว ----------
+            // ---------- MENU : ประวัติลูกค้า ----------
             _adminMenuCard(
               context: context,
-              icon: Icons.list_alt,
-              title: "ดูคิวทั้งหมด",
-              subtitle: "ดูรายการจองของลูกค้าทั้งหมด",
-              color: const Color(0xFF4CAF93),
+              icon: Icons.history,
+              title: "ประวัติลูกค้า",
+              subtitle: "รายละเอียด • การเข้าใช้บริการ",
+              color: const Color(0xFF4CAF93), // สีเดิม
               onTap: () {
-                Navigator.pushNamed(context, '/admin/queue');
+                Navigator.pushNamed(context, '/admin/customer-history');
               },
             ),
 

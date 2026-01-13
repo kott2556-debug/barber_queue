@@ -131,4 +131,21 @@ class FirestoreService {
         .snapshots()
         .map((snapshot) => snapshot.docs.map((doc) => doc.id).toList());
   }
+
+  // ==================================================
+  // 🧑‍💼 ADMIN: ล้างคิว 1 คิว (พร้อมปลด lock)
+  // ==================================================
+  Future<void> clearSingleQueue({
+    required String bookingId,
+    required String phone,
+    required String time,
+  }) async {
+    final batch = _db.batch();
+
+    batch.delete(_db.collection('bookings').doc(bookingId));
+    batch.delete(_db.collection('active_bookings').doc(phone));
+    batch.delete(_db.collection('time_locks').doc(time));
+
+    await batch.commit();
+  }
 }

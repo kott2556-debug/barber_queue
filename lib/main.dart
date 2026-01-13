@@ -13,7 +13,7 @@ import 'screens/queue_screen.dart';
 import 'screens/admin_dashboard.dart';
 import 'screens/admin_manage_queue_screen.dart';
 import 'screens/admin_settings_screen.dart';
-import 'screens/admin_queue_screen.dart'; // ✅ เพิ่มอันนี้
+import 'screens/admin_customer_history_page.dart'; // ✅ เพิ่มบรรทัดนี้
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,9 +38,9 @@ class MyApp extends StatelessWidget {
         '/queue': (_) => QueueScreen(), // 👤 คิวของลูกค้า
         // ---------- ADMIN ----------
         '/admin': (_) => const AdminDashboard(),
-        '/admin/queue': (_) => const AdminQueueScreen(),
         '/admin/manage': (_) => AdminManageQueueScreen(),
         '/admin/settings': (_) => const AdminSettingsScreen(),
+        '/admin/customer-history': (_) => const AdminCustomerHistoryPage(), // ✅ เพิ่มหน้าใหม่
       },
     );
   }
