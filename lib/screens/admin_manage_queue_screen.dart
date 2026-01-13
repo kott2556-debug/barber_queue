@@ -97,28 +97,47 @@ class AdminManageQueueScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
 
-                      // ---------- ชื่อ + เบอร์ ----------
+                      // ---------- ชื่อ + เบอร์ + เวลา ----------
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Stack(
                           children: [
-                            Text(
-                              data['name'] ?? '-',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                overflow: TextOverflow.ellipsis,
+                            // ชื่อ + เบอร์ชิดซ้าย
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    data['name'] ?? '-',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    maxLines: 1,
+                                  ),
+                                  Text(
+                                    data['phone'] ?? '-',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black54,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    maxLines: 1,
+                                  ),
+                                ],
                               ),
-                              maxLines: 1,
                             ),
-                            Text(
-                              data['phone'] ?? '-',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black54,
-                                overflow: TextOverflow.ellipsis,
+                            // เวลาอยู่กึ่งกลาง Card
+                            Align(
+                              alignment: Alignment.center,
+                              child: Text(
+                                data['time'] ?? '-',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black87,
+                                ),
                               ),
-                              maxLines: 1,
                             ),
                           ],
                         ),
