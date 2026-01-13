@@ -36,7 +36,8 @@ class AdminManageQueueScreen extends StatelessWidget {
             final bLabel = (b['queueLabel'] ?? '') as String;
 
             int extract(String s) =>
-                int.tryParse(RegExp(r'\d+').firstMatch(s)?.group(0) ?? '') ?? 999;
+                int.tryParse(RegExp(r'\d+').firstMatch(s)?.group(0) ?? '') ??
+                999;
 
             return extract(aLabel).compareTo(extract(bLabel));
           });
@@ -99,44 +100,38 @@ class AdminManageQueueScreen extends StatelessWidget {
 
                       // ---------- ชื่อ + เบอร์ + เวลา ----------
                       Expanded(
-                        child: Stack(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // ชื่อ + เบอร์ชิดซ้าย
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    data['name'] ?? '-',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    maxLines: 1,
-                                  ),
-                                  Text(
-                                    data['phone'] ?? '-',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black54,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    maxLines: 1,
-                                  ),
-                                ],
+                            // ชื่อ (เป็นมิตร + ขยับขึ้น)
+                            Text(
+                              data['name'] ?? 'ลูกค้า',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              maxLines: 1,
+                            ),
+                            const SizedBox(height: 2),
+
+                            // เบอร์โทร (ตรงแนวเดียวกับทุกคิว)
+                            Text(
+                              data['phone'] ?? '-',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black54,
                               ),
                             ),
-                            // เวลาชิดขวา Card
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: Text(
-                                data['time'] ?? '-',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black87,
-                                ),
+                            const SizedBox(height: 2),
+
+                            // เวลา (ย้ายมาอยู่ใต้เบอร์)
+                            Text(
+                              data['time'] ?? '-',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.black87,
                               ),
                             ),
                           ],
@@ -160,7 +155,9 @@ class AdminManageQueueScreen extends StatelessWidget {
                           if (status == 'waiting')
                             ElevatedButton(
                               onPressed: () async {
-                                await firestoreService.callNextQueueByAdmin(doc.id);
+                                await firestoreService.callNextQueueByAdmin(
+                                  doc.id,
+                                );
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.blue,
@@ -168,7 +165,9 @@ class AdminManageQueueScreen extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 minimumSize: const Size(80, 32),
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
                               ),
                               child: const Text(
                                 'รอคิว',
@@ -182,7 +181,9 @@ class AdminManageQueueScreen extends StatelessWidget {
                           if (status == 'serving')
                             ElevatedButton(
                               onPressed: () async {
-                                await firestoreService.finishQueueByAdmin(doc.id);
+                                await firestoreService.finishQueueByAdmin(
+                                  doc.id,
+                                );
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green,
@@ -190,7 +191,9 @@ class AdminManageQueueScreen extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 minimumSize: const Size(100, 32),
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
                               ),
                               child: const Text(
                                 'กำลังให้บริการ',
