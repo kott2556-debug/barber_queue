@@ -1,48 +1,65 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/firestore_service.dart';
 import '../utils/queue_manager.dart';
 
-class QueueScreen extends StatelessWidget {
-  QueueScreen({super.key});
+class QueueScreen extends StatefulWidget {
+  const QueueScreen({super.key});
 
+  @override
+  State<QueueScreen> createState() => _QueueScreenState();
+}
+
+class _QueueScreenState extends State<QueueScreen> {
   final FirestoreService firestoreService = FirestoreService();
   final QueueManager qm = QueueManager();
 
-  /// แปลง "11:10" → DateTime วันนี้
-  DateTime? _parseBookingTime(String? time) {
-    if (time == null || !time.contains(':')) return null;
+  Timer? _refreshTimer;
 
+  @override
+  void initState() {
+    super.initState();
+
+    // 🔁 รีเฟรชทุก 5 นาที
+    _refreshTimer = Timer.periodic(const Duration(minutes: 5), (_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  /// คืนค่า object เพื่อบอกทั้งข้อความ + สถานะ
+  Map<String, dynamic>? getCountdown(String time) {
+    final now = DateTime.now();
     final parts = time.split(':');
     if (parts.length != 2) return null;
 
-    final hour = int.tryParse(parts[0]);
-    final minute = int.tryParse(parts[1]);
+    final bookingTime = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      int.parse(parts[0]),
+      int.parse(parts[1]),
+    );
 
-    if (hour == null || minute == null) return null;
-
-    final now = DateTime.now();
-    return DateTime(now.year, now.month, now.day, hour, minute);
-  }
-
-  /// คำนวณข้อความนับถอยหลังแบบ step
-  String? _countdownText(DateTime bookingTime) {
-    final now = DateTime.now();
     final diffMinutes = bookingTime.difference(now).inMinutes;
 
-    if (diffMinutes > 60) return null;
+    if (diffMinutes > 30) return null;
 
-    if (diffMinutes <= 0) {
-      return 'กรุณามารับบริการ';
+    if (diffMinutes <= 4) {
+      return {'text': 'ถึงเวลาเข้ารับบริการแล้ว', 'isFinal': true};
     }
 
-    if (diffMinutes > 50) return 'อีก 60 นาที จะถึงคิวคุณ';
-    if (diffMinutes > 40) return 'อีก 50 นาที จะถึงคิวคุณ';
-    if (diffMinutes > 30) return 'อีก 40 นาที จะถึงคิวคุณ';
-    if (diffMinutes > 20) return 'อีก 30 นาที จะถึงคิวคุณ';
-    if (diffMinutes > 10) return 'อีก 20 นาที จะถึงคิวคุณ';
+    final stepMinute = ((diffMinutes / 5).floor()) * 5;
 
-    return 'อีก 10 นาที จะถึงคิวคุณ';
+    return {'text': 'อีก $stepMinute นาที จะถึงคิวคุณ', 'isFinal': false};
   }
 
   @override
@@ -65,28 +82,35 @@ class QueueScreen extends StatelessWidget {
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                if (!snapshot.hasData) {
                   return const Center(child: Text('ไม่พบข้อมูลคิว'));
                 }
 
-                final userDocs = snapshot.data!.docs.where((doc) {
+                final userQueues = snapshot.data!.docs.where((doc) {
                   final data = doc.data() as Map<String, dynamic>;
                   return data['phone'] == userPhone;
                 }).toList();
 
-                if (userDocs.isEmpty) {
+                if (userQueues.isEmpty) {
                   return const Center(child: Text('คุณยังไม่มีคิว'));
                 }
 
-                final doc = userDocs.last;
-                final data = doc.data() as Map<String, dynamic>;
+                final data = userQueues.last.data() as Map<String, dynamic>;
 
-                final queueLabel = data['queueLabel'] ?? '';
+                final queueLabel = data['queueLabel'];
                 final name = data['name'] ?? '-';
                 final time = data['time'];
-                final bookingTime = _parseBookingTime(time);
-                final countdown =
-                    bookingTime != null ? _countdownText(bookingTime) : null;
+
+                final countdown = time != null ? getCountdown(time) : null;
+
+                final bool isFinal =
+                    countdown != null && countdown['isFinal'] == true;
+
+                final Color bgColor = isFinal
+                    ? Colors.red.withAlpha(38)
+                    : Colors.blue.withAlpha(38);
+
+                final Color textColor = isFinal ? Colors.red : Colors.blue;
 
                 return Center(
                   child: Card(
@@ -100,14 +124,15 @@ class QueueScreen extends StatelessWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            queueLabel,
-                            style: const TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF4CAF93),
+                          if (queueLabel != null)
+                            Text(
+                              queueLabel,
+                              style: const TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF4CAF93),
+                              ),
                             ),
-                          ),
                           const SizedBox(height: 8),
                           Text(
                             name,
@@ -117,52 +142,29 @@ class QueueScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 10),
-
-                          /// เวลาที่จอง (แสดงตลอด)
                           Text(
                             'เวลาที่จอง $time',
                             style: const TextStyle(fontSize: 16),
                           ),
-
                           const SizedBox(height: 20),
-
-                          /// ปุ่ม / ข้อความด้านล่าง
-                          if (countdown == null)
+                          if (countdown != null)
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 10,
+                                vertical: 12,
+                                horizontal: 24,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.blue.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Text(
-                                'รอคิว',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue,
-                                ),
-                              ),
-                            )
-                          else
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 10,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.blue.withValues(alpha: 0.2),
+                                color: bgColor,
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
-                                countdown,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
+                                countdown['text'],
+                                style: TextStyle(
                                   fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue,
+                                  fontWeight: isFinal
+                                      ? FontWeight.bold
+                                      : FontWeight.w600,
+                                  color: textColor,
                                 ),
                               ),
                             ),
