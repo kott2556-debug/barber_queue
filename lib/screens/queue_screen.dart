@@ -124,11 +124,12 @@ class _QueueScreenState extends State<QueueScreen> {
                                     padding: const EdgeInsets.all(24),
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: CrossAxisAlignment.start, // ข้อความชิดซ้าย
+                                      crossAxisAlignment: CrossAxisAlignment.center, // เปลี่ยนเป็น center เพื่อจัดกลาง
                                       children: [
                                         if (queueLabel != null)
                                           Text(
                                             queueLabel,
+                                            textAlign: TextAlign.center, // ✅ เติมอันนี้ด้วยเพื่อให้ตัวหนังสือในบรรทัดอยู่กลาง
                                             style: const TextStyle(
                                               fontSize: 26,
                                               fontWeight: FontWeight.bold,
@@ -138,6 +139,7 @@ class _QueueScreenState extends State<QueueScreen> {
                                         const SizedBox(height: 8),
                                         Text(
                                           name,
+                                          textAlign: TextAlign.center, // ✅ เติมอันนี้ด้วย
                                           style: const TextStyle(
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
