@@ -64,7 +64,12 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                 const SnackBar(content: Text("ล้างคิวทั้งหมดเรียบร้อย")),
               );
             },
-            child: const Text("ยืนยันล้าง"),
+            child: const Text(
+              "ยืนยันล้าง",
+              style: TextStyle(
+                color: Colors.white,
+              ), // เพิ่มตรงนี้เพื่อให้เป็นสีขาว
+            ),
           ),
         ],
       ),
@@ -89,8 +94,13 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
               final sortedDocs = [...docs];
               sortedDocs.sort((a, b) {
                 int getNum(String s) =>
-                    int.tryParse(RegExp(r'\d+').firstMatch(s)?.group(0) ?? '') ?? 999;
-                return getNum(a['queueLabel']).compareTo(getNum(b['queueLabel']));
+                    int.tryParse(
+                      RegExp(r'\d+').firstMatch(s)?.group(0) ?? '',
+                    ) ??
+                    999;
+                return getNum(
+                  a['queueLabel'],
+                ).compareTo(getNum(b['queueLabel']));
               });
               return ListView.builder(
                 shrinkWrap: true,
@@ -163,7 +173,12 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                 SnackBar(content: Text("ล้าง $queueLabel เรียบร้อย")),
               );
             },
-            child: const Text("ยืนยันล้าง"),
+            child: const Text(
+              "ยืนยันล้าง",
+              style: TextStyle(
+                color: Colors.white,
+              ), // เพิ่มตรงนี้เพื่อให้เป็นสีขาว
+            ),
           ),
         ],
       ),
@@ -190,7 +205,11 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     ListTile(
-                      leading: const Icon(Icons.access_time, size: 45, color: Colors.blue),
+                      leading: const Icon(
+                        Icons.access_time,
+                        size: 45,
+                        color: Colors.blue,
+                      ),
                       title: const Text(
                         "ตั้งค่าเวลารับคิว",
                         style: TextStyle(fontWeight: FontWeight.bold),
@@ -245,7 +264,10 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   color: Colors.white,
-                                  border: Border.all(color: Colors.red, width: 2),
+                                  border: Border.all(
+                                    color: Colors.red,
+                                    width: 2,
+                                  ),
                                 ),
                                 alignment: Alignment.center,
                                 child: const Text(
@@ -265,12 +287,18 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                         "ล้างคิว 1 คิว",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      subtitle: const Text("กรณีลูกค้ายกเลิกหรือเปลี่ยนเวลาจอง"),
+                      subtitle: const Text(
+                        "กรณีลูกค้ายกเลิกหรือเปลี่ยนเวลาจอง",
+                      ),
                       onTap: _openClearSingleQueuePopup,
                     ),
                     const Divider(),
                     ListTile(
-                      leading: const Icon(Icons.restart_alt, size: 55, color: Colors.red),
+                      leading: const Icon(
+                        Icons.restart_alt,
+                        size: 55,
+                        color: Colors.red,
+                      ),
                       title: const Text(
                         "ล้างคิวทั้งหมด",
                         style: TextStyle(fontWeight: FontWeight.bold),
