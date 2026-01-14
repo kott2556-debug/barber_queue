@@ -40,9 +40,9 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('บันทึกเวลารับคิวเรียบร้อย')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('บันทึกเวลารับคิวเรียบร้อย')));
 
     setState(() {
       _previewTimes = times;
@@ -51,10 +51,12 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final morningTimes =
-        _previewTimes.where((t) => t.compareTo('12:00') < 0).toList();
-    final afternoonTimes =
-        _previewTimes.where((t) => t.compareTo('13:00') >= 0).toList();
+    final morningTimes = _previewTimes
+        .where((t) => t.compareTo('12:00') < 0)
+        .toList();
+    final afternoonTimes = _previewTimes
+        .where((t) => t.compareTo('13:00') >= 0)
+        .toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -63,7 +65,8 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
         centerTitle: true,
         foregroundColor: Colors.white,
       ),
-      body: SingleChildScrollView( // ✅ เพิ่มตรงนี้
+      body: SingleChildScrollView(
+        // ✅ เพิ่มตรงนี้
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -123,10 +126,7 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
                 minimumSize: const Size(double.infinity, 50),
                 backgroundColor: const Color.fromARGB(255, 132, 218, 193),
               ),
-              child: const Text(
-                'บันทึกคิว',
-                style: TextStyle(fontSize: 18),
-              ),
+              child: const Text('บันทึกคิว', style: TextStyle(fontSize: 18)),
             ),
 
             const SizedBox(height: 24),
@@ -156,7 +156,7 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
                     padding: EdgeInsets.symmetric(horizontal: 8),
                     child: Text(
                       'พักเที่ยง 12:00 – 13:00',
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                   Expanded(child: Divider()),
