@@ -25,9 +25,41 @@ class HomeScreen extends StatelessWidget {
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // ================== กล่องข้อความด้านบน ==================
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      margin: const EdgeInsets.only(bottom: 24),
+                      decoration: BoxDecoration(
+                        color: const Color.fromRGBO(167, 233, 214, 0.35),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color.fromRGBO(0, 0, 0, 0.08),
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'ยินดีต้อนรับ\n'
+                          'ร้านตัดผมชาย ลับแล BAEBER\n'
+                          '\n'
+                          '*ตำเตือน*\n'
+                          'เมื่อจองคิวแล้วไม่สามรถเปลี่ยนแปลงได้\n',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ),
+
                     // ================== ปุ่มจองคิว ==================
                     SizedBox(
                       width: double.infinity,
@@ -35,7 +67,7 @@ class HomeScreen extends StatelessWidget {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
-                              const Color.fromARGB(255, 167, 233, 214),
+                              const Color.fromARGB(255, 177, 206, 197),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(24),
                           ),
