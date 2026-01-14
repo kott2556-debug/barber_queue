@@ -67,7 +67,7 @@ class HomeScreen extends StatelessWidget {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
-                              const Color.fromARGB(255, 177, 206, 197),
+                              const Color.fromARGB(255, 175, 235, 216),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(24),
                           ),
