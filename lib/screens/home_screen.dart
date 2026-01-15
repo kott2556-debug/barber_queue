@@ -47,7 +47,7 @@ class HomeScreen extends StatelessWidget {
                           'ยินดีต้อนรับ\n'
                           'ร้านตัดผมชาย ลับแล BAEBER\n'
                           '\n'
-                          '*ตำเตือน*\n'
+                          '*คำเตือน*\n'
                           'เมื่อจองคิวแล้วไม่สามรถเปลี่ยนแปลงได้\n',
                           textAlign: TextAlign.center,
                           style: TextStyle(
@@ -66,8 +66,12 @@ class HomeScreen extends StatelessWidget {
                       height: 70,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              const Color.fromARGB(255, 175, 235, 216),
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            175,
+                            235,
+                            216,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(24),
                           ),
@@ -77,9 +81,7 @@ class HomeScreen extends StatelessWidget {
                           if (qm.currentUserName == null ||
                               qm.currentUserPhone == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("กรุณา Login ก่อน"),
-                              ),
+                              const SnackBar(content: Text("กรุณา Login ก่อน")),
                             );
                             return;
                           }
@@ -104,8 +106,12 @@ class HomeScreen extends StatelessWidget {
                       height: 70,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              const Color.fromARGB(255, 155, 229, 198),
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            155,
+                            229,
+                            198,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(24),
                           ),
