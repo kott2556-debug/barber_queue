@@ -11,8 +11,9 @@ class QueueManager extends ChangeNotifier {
   factory QueueManager() => _instance;
 
   QueueManager._internal() {
+    _autoResetAtMidnight(); // 🕛 เพิ่ม: รีเซ็ตอัตโนมัติเมื่อวันเปลี่ยน
     _listenBookingStatus();
-    _listenQueueSettings(); // 🔥 ฟังทั้งเวลา + config
+    _listenQueueSettings();
   }
 
   final FirestoreService _firestore = FirestoreService();
@@ -45,7 +46,7 @@ class QueueManager extends ChangeNotifier {
   List<String> get availableTimes => List.unmodifiable(_availableTimes);
 
   // --------------------
-  // 🧠 ค่า config ล่าสุด (Admin)
+  // ค่า config ล่าสุด (Admin)
   // --------------------
   int _totalQueues = 10;
   int _minutesPerQueue = 30;
@@ -54,7 +55,7 @@ class QueueManager extends ChangeNotifier {
   int get minutesPerQueue => _minutesPerQueue;
 
   // --------------------
-  // 🏷️ แปลงเวลา → ป้ายคิว
+  // แปลงเวลา → ป้ายคิว
   // --------------------
   String getQueueLabel(String time) {
     final index = _availableTimes.indexOf(time);
@@ -63,7 +64,7 @@ class QueueManager extends ChangeNotifier {
   }
 
   // --------------------
-  // 🔥 Admin บันทึกเวลา + config
+  // Admin บันทึกเวลา + config
   // --------------------
   Future<void> saveQueueSettings({
     required List<String> times,
@@ -90,7 +91,7 @@ class QueueManager extends ChangeNotifier {
   }
 
   // --------------------
-  // 🔥 Sync เวลา + config จาก Firestore
+  // Sync เวลา + config จาก Firestore
   // --------------------
   void _listenQueueSettings() {
     _queueSettingsSub = FirebaseFirestore.instance
@@ -120,7 +121,7 @@ class QueueManager extends ChangeNotifier {
   }
 
   // --------------------
-  // 🔓 เปิด / ปิดรับคิว
+  // เปิด / ปิดรับคิว
   // --------------------
   bool _isOpenForBooking = true;
   bool get isOpenForBooking => _isOpenForBooking;
@@ -150,7 +151,30 @@ class QueueManager extends ChangeNotifier {
   }
 
   // --------------------
-  // ➕ เพิ่มคิว (Transaction)
+  // 🕛 รีเซ็ตอัตโนมัติเมื่อวันเปลี่ยน (00:00)
+  // --------------------
+  Future<void> _autoResetAtMidnight() async {
+    final now = DateTime.now();
+    final today =
+        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+
+    final docRef = FirebaseFirestore.instance
+        .collection('system_settings')
+        .doc('booking');
+
+    final doc = await docRef.get();
+    final data = doc.data() ?? {};
+
+    if (data['lastResetDate'] != today) {
+      await docRef.set({
+        'isOpen': true,
+        'lastResetDate': today,
+      }, SetOptions(merge: true));
+    }
+  }
+
+  // --------------------
+  // เพิ่มคิว (Transaction)
   // --------------------
   Future<void> addBooking({
     required String name,
