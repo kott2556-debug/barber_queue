@@ -16,6 +16,19 @@ class _BookingScreenState extends State<BookingScreen> {
   String? selectedTime;
   bool _isSubmitting = false;
 
+  // ✅ เพิ่มเฉพาะฟังก์ชันนี้ (ไม่กระทบของเดิม)
+  bool _isTimeLocked(String time) {
+    final now = TimeOfDay.now();
+
+    final nowMinutes = now.hour * 60 + now.minute;
+
+    final parts = time.split(':');
+    final limitMinutes = int.parse(parts[0]) * 60 + int.parse(parts[1]);
+
+    // ล็อคเฉพาะ "เมื่อเวลาปัจจุบันมากกว่าหรือเท่ากับเวลาปุ่ม"
+    return nowMinutes >= limitMinutes;
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -38,7 +51,9 @@ class _BookingScreenState extends State<BookingScreen> {
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -64,7 +79,14 @@ class _BookingScreenState extends State<BookingScreen> {
                               return Column(
                                 children: times.map((time) {
                                   final queueLabel = qm.getQueueLabel(time);
+
                                   final isBooked = bookedTimes.contains(time);
+
+                                  // ✅ ล็อคตามเวลา
+                                  final isTimeLocked = _isTimeLocked(time);
+
+                                  final isLocked = isBooked || isTimeLocked;
+
                                   final isSelected = selectedTime == time;
 
                                   return Padding(
@@ -72,29 +94,35 @@ class _BookingScreenState extends State<BookingScreen> {
                                     child: Material(
                                       elevation: isSelected ? 3 : 1,
                                       borderRadius: BorderRadius.circular(24),
-                                      color: isBooked
+                                      color: isLocked
                                           ? Colors.grey.shade300
                                           : isSelected
-                                              ? const Color(0xFFDFF3EC)
-                                              : Colors.white,
+                                          ? const Color(0xFFDFF3EC)
+                                          : Colors.white,
                                       child: InkWell(
                                         borderRadius: BorderRadius.circular(24),
-                                        onTap: isBooked
+                                        onTap: isLocked
                                             ? null
-                                            : () => setState(() => selectedTime = time),
+                                            : () => setState(
+                                                () => selectedTime = time,
+                                              ),
                                         child: Padding(
                                           padding: const EdgeInsets.symmetric(
-                                              vertical: 22, horizontal: 20),
+                                            vertical: 22,
+                                            horizontal: 20,
+                                          ),
                                           child: Row(
                                             children: [
                                               Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
                                                     queueLabel,
                                                     style: const TextStyle(
                                                       fontSize: 18,
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                     ),
                                                   ),
                                                   const SizedBox(height: 4),
@@ -102,7 +130,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                                     time,
                                                     style: TextStyle(
                                                       fontSize: 14,
-                                                      color: isBooked
+                                                      color: isLocked
                                                           ? Colors.grey
                                                           : Colors.black54,
                                                     ),
@@ -110,8 +138,11 @@ class _BookingScreenState extends State<BookingScreen> {
                                                 ],
                                               ),
                                               const Spacer(),
-                                              if (isBooked)
-                                                const Icon(Icons.lock, color: Colors.grey)
+                                              if (isLocked)
+                                                const Icon(
+                                                  Icons.lock,
+                                                  color: Colors.grey,
+                                                )
                                               else if (isSelected)
                                                 const Icon(
                                                   Icons.check_circle,
@@ -139,13 +170,17 @@ class _BookingScreenState extends State<BookingScreen> {
           bottomNavigationBar: Padding(
             padding: const EdgeInsets.all(16),
             child: ElevatedButton(
-              onPressed: (!qm.isOpenForBooking || selectedTime == null || _isSubmitting)
+              onPressed:
+                  (!qm.isOpenForBooking ||
+                      selectedTime == null ||
+                      _isSubmitting)
                   ? null
                   : () async {
                       if (_isSubmitting) return;
                       setState(() => _isSubmitting = true);
 
-                      if (qm.currentUserName == null || qm.currentUserPhone == null) {
+                      if (qm.currentUserName == null ||
+                          qm.currentUserPhone == null) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text("กรุณา Login ใหม่")),

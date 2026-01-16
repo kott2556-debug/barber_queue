@@ -44,12 +44,9 @@ class HomeScreen extends StatelessWidget {
                       ),
                       child: const Center(
                         child: Text(
-                          'ร้านตัดผมชาย ลับแล BAEBER\n'
+                          'คำเตือน'
                           '\n'
-                          '* คำเตือน *\n'
-                          'เมื่อจองคิวแล้วไม่สามรถเปลี่ยนแปลงได้\n'
-                          '\n'
-                          'ถ้าพร้อมแล้วกดปุ่ม จองคิว ได้เลย\n',
+                          'เมื่อจองคิวแล้วไม่สามรถเปลี่ยนแปลงได้\n',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 18,

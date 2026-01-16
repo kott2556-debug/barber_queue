@@ -55,10 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     await _saveUser(name, phone);
-    QueueManager().setCurrentUser(
-      name: name,
-      phone: phone
-    );
+    QueueManager().setCurrentUser(name: name, phone: phone);
     if (!mounted) return;
 
     // ---- เงื่อนไขเข้า Admin ----
@@ -76,17 +73,39 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F7F6),
       appBar: AppBar(
-        title: const Text("ลับแล BARBER"),
+        title: const Text("ร้าน ลับแล BARBER"),
         centerTitle: true,
         backgroundColor: const Color.fromARGB(255, 10, 158, 106),
         elevation: 0,
-        foregroundColor: Colors.white
+        foregroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
+            /// ---- กล่องข้อความแนะนำ ----
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8F5F1), // ✅ สีพื้นกล่อง (เปลี่ยนได้)
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: const Color(0xFF0A9E6A), // ✅ สีขอบ
+                  width: 1,
+                ),
+              ),
+              child: const Text(
+                "ยินดีต้อนรับ\nลงชื่อก่อนเข้าใช้งาน",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 15, color: Colors.black87),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
             /// ---- ชื่อ ----
             isEditingName
                 ? TextField(
