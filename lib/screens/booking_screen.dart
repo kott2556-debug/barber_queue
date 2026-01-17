@@ -130,9 +130,10 @@ class _BookingScreenState extends State<BookingScreen> {
                                                     time,
                                                     style: TextStyle(
                                                       fontSize: 14,
+                                                      fontWeight: FontWeight.bold, // ✅ ทำตัวหนา
                                                       color: isLocked
                                                           ? Colors.grey
-                                                          : Colors.black54,
+                                                          : Colors.black,
                                                     ),
                                                   ),
                                                 ],
