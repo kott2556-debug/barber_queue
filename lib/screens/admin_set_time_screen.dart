@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../utils/queue_manager.dart';
 import '../utils/queue_time_calculator.dart';
@@ -19,11 +20,21 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
   @override
   void initState() {
     super.initState();
+    _loadFromManager();
+  }
 
-    // 🔥 โหลดค่าล่าสุดจาก QueueManager
-    _numQueues = _qm.totalQueues;
-    _minutesPerQueue = _qm.minutesPerQueue;
-    _previewTimes = List.from(_qm.availableTimes);
+  Future<void> _loadFromManager() async {
+    while (!_qm.settingsLoaded) {
+      await Future.delayed(const Duration(milliseconds: 50));
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _numQueues = _qm.totalQueues;
+      _minutesPerQueue = _qm.minutesPerQueue;
+      _previewTimes = List.from(_qm.availableTimes);
+    });
   }
 
   Future<void> _save() async {
@@ -40,9 +51,9 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('บันทึกเวลารับคิวเรียบร้อย')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('บันทึกเวลารับคิวเรียบร้อย')),
+    );
 
     setState(() {
       _previewTimes = times;
@@ -51,12 +62,10 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final morningTimes = _previewTimes
-        .where((t) => t.compareTo('12:00') < 0)
-        .toList();
-    final afternoonTimes = _previewTimes
-        .where((t) => t.compareTo('13:00') >= 0)
-        .toList();
+    final morningTimes =
+        _previewTimes.where((t) => t.compareTo('12:00') < 0).toList();
+    final afternoonTimes =
+        _previewTimes.where((t) => t.compareTo('13:00') >= 0).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -66,7 +75,6 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
-        // ✅ เพิ่มตรงนี้
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,7 +85,7 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
             ),
             const SizedBox(height: 20),
 
-            // ---------- จำนวนคิว ----------
+            // จำนวนคิว
             Row(
               children: [
                 const Text('จำนวนคิว: '),
@@ -88,16 +96,15 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
                     max: 16,
                     divisions: 6,
                     label: '$_numQueues',
-                    onChanged: (v) {
-                      setState(() => _numQueues = v.round());
-                    },
+                    onChanged: (v) =>
+                        setState(() => _numQueues = v.round()),
                   ),
                 ),
                 Text('$_numQueues'),
               ],
             ),
 
-            // ---------- นาทีต่อคิว ----------
+            // นาทีต่อคิว
             Row(
               children: [
                 const Text('นาทีต่อคิว: '),
@@ -108,9 +115,8 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
                     max: 60,
                     divisions: 40,
                     label: '$_minutesPerQueue',
-                    onChanged: (v) {
-                      setState(() => _minutesPerQueue = v.round());
-                    },
+                    onChanged: (v) =>
+                        setState(() => _minutesPerQueue = v.round()),
                   ),
                 ),
                 Text('$_minutesPerQueue นาที'),
@@ -119,7 +125,7 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
 
             const SizedBox(height: 20),
 
-            // ---------- ปุ่มบันทึก ----------
+            // ปุ่มบันทึก
             ElevatedButton(
               onPressed: _save,
               style: ElevatedButton.styleFrom(
@@ -131,7 +137,6 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
 
             const SizedBox(height: 24),
 
-            // ---------- Preview ----------
             if (_previewTimes.isNotEmpty) ...[
               const Text(
                 'ตัวอย่างเวลาคิว',
@@ -139,16 +144,9 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
               ),
               const SizedBox(height: 12),
 
-              // เช้า
-              for (final t in morningTimes)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Text(t),
-                ),
+              for (final t in morningTimes) Text(t),
 
               const SizedBox(height: 12),
-
-              // พักเที่ยง
               Row(
                 children: const [
                   Expanded(child: Divider()),
@@ -162,15 +160,9 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
                   Expanded(child: Divider()),
                 ],
               ),
-
               const SizedBox(height: 12),
 
-              // บ่าย
-              for (final t in afternoonTimes)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Text(t),
-                ),
+              for (final t in afternoonTimes) Text(t),
             ],
           ],
         ),

@@ -11,7 +11,7 @@ class QueueManager extends ChangeNotifier {
   factory QueueManager() => _instance;
 
   QueueManager._internal() {
-    _autoResetAtMidnight(); // 🕛 เพิ่ม: รีเซ็ตอัตโนมัติเมื่อวันเปลี่ยน
+    _autoResetAtMidnight();
     _listenBookingStatus();
     _listenQueueSettings();
   }
@@ -20,6 +20,12 @@ class QueueManager extends ChangeNotifier {
 
   StreamSubscription<DocumentSnapshot>? _bookingStatusSub;
   StreamSubscription<DocumentSnapshot>? _queueSettingsSub;
+
+  // --------------------
+  // โหลดค่า config แล้วหรือยัง (🔥 เพิ่ม)
+  // --------------------
+  bool _settingsLoaded = false;
+  bool get settingsLoaded => _settingsLoaded;
 
   // --------------------
   // ผู้ใช้ปัจจุบัน
@@ -116,6 +122,8 @@ class QueueManager extends ChangeNotifier {
       if (tq != null) _totalQueues = tq;
       if (mpq != null) _minutesPerQueue = mpq;
 
+      _settingsLoaded = true; // 🔥 สำคัญ
+
       notifyListeners();
     });
   }
@@ -144,14 +152,11 @@ class QueueManager extends ChangeNotifier {
     await FirebaseFirestore.instance
         .collection('system_settings')
         .doc('booking')
-        .set(
-      {'isOpen': open},
-      SetOptions(merge: true),
-    );
+        .set({'isOpen': open}, SetOptions(merge: true));
   }
 
   // --------------------
-  // 🕛 รีเซ็ตอัตโนมัติเมื่อวันเปลี่ยน (00:00)
+  // 🕛 รีเซ็ตอัตโนมัติเมื่อวันเปลี่ยน
   // --------------------
   Future<void> _autoResetAtMidnight() async {
     final now = DateTime.now();
@@ -174,7 +179,7 @@ class QueueManager extends ChangeNotifier {
   }
 
   // --------------------
-  // เพิ่มคิว (Transaction)
+  // เพิ่มคิว
   // --------------------
   Future<void> addBooking({
     required String name,
