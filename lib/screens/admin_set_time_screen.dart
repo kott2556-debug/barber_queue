@@ -51,9 +51,9 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('บันทึกเวลารับคิวเรียบร้อย')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('บันทึกเวลารับคิวเรียบร้อย')));
 
     setState(() {
       _previewTimes = times;
@@ -62,10 +62,12 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final morningTimes =
-        _previewTimes.where((t) => t.compareTo('12:00') < 0).toList();
-    final afternoonTimes =
-        _previewTimes.where((t) => t.compareTo('13:00') >= 0).toList();
+    final morningTimes = _previewTimes
+        .where((t) => t.compareTo('12:00') < 0)
+        .toList();
+    final afternoonTimes = _previewTimes
+        .where((t) => t.compareTo('13:00') >= 0)
+        .toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -96,8 +98,7 @@ class _AdminSetTimeScreenState extends State<AdminSetTimeScreen> {
                     max: 16,
                     divisions: 6,
                     label: '$_numQueues',
-                    onChanged: (v) =>
-                        setState(() => _numQueues = v.round()),
+                    onChanged: (v) => setState(() => _numQueues = v.round()),
                   ),
                 ),
                 Text('$_numQueues'),

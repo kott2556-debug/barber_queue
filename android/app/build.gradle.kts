@@ -28,11 +28,13 @@ android {
     }
 
     buildTypes {
-        release {
-            isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("debug")
-        }
+    release {
+        isMinifyEnabled = false
+        isShrinkResources = false
+        signingConfig = signingConfigs.getByName("debug")
     }
+}
+
 }
 
 dependencies {
