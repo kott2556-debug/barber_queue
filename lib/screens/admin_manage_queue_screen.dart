@@ -7,6 +7,17 @@ class AdminManageQueueScreen extends StatelessWidget {
 
   final FirestoreService firestoreService = FirestoreService();
 
+  Color _getQueueColor(String status) {
+    switch (status) {
+      case 'arrived':
+        return Colors.green;
+      case 'absent':
+        return Colors.red;
+      default:
+        return Colors.blue;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,7 +40,6 @@ class AdminManageQueueScreen extends StatelessWidget {
 
           final docs = snapshot.data!.docs;
 
-          // ✅ sort ตามเลขคิว
           final sortedDocs = [...docs];
           sortedDocs.sort((a, b) {
             final aLabel = (a['queueLabel'] ?? '') as String;
@@ -51,23 +61,9 @@ class AdminManageQueueScreen extends StatelessWidget {
 
               final status = data['status'] ?? 'waiting';
               final queueLabel = data['queueLabel'] ?? 'คิว ${index + 1}';
+              final queueColor = _getQueueColor(status);
 
-              Color statusColor;
-              String statusText;
-
-              switch (status) {
-                case 'serving':
-                  statusColor = Colors.green;
-                  statusText = 'กำลังให้บริการ';
-                  break;
-                case 'done':
-                  statusColor = Colors.grey;
-                  statusText = 'เสร็จแล้ว';
-                  break;
-                default:
-                  statusColor = Colors.blue;
-                  statusText = 'รอคิว';
-              }
+              final bool isLocked = status == 'arrived' || status == 'absent';
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
@@ -84,7 +80,7 @@ class AdminManageQueueScreen extends StatelessWidget {
                         height: 32,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: statusColor,
+                          color: queueColor,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
@@ -98,25 +94,19 @@ class AdminManageQueueScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
 
-                      // ---------- ชื่อ + เบอร์ + เวลา ----------
+                      // ---------- ข้อมูล ----------
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // ชื่อ (เป็นมิตร + ขยับขึ้น)
                             Text(
                               data['name'] ?? 'ลูกค้า',
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                overflow: TextOverflow.ellipsis,
                               ),
-                              maxLines: 1,
                             ),
                             const SizedBox(height: 2),
-
-                            // เบอร์โทร (ตรงแนวเดียวกับทุกคิว)
                             Text(
                               data['phone'] ?? '-',
                               style: const TextStyle(
@@ -125,8 +115,6 @@ class AdminManageQueueScreen extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 2),
-
-                            // เวลา (ย้ายมาอยู่ใต้เบอร์)
                             Text(
                               data['time'] ?? '-',
                               style: const TextStyle(
@@ -140,70 +128,75 @@ class AdminManageQueueScreen extends StatelessWidget {
 
                       const SizedBox(width: 12),
 
-                      // ---------- สถานะ + ปุ่ม ----------
-                      Column(
+                      // ---------- ปุ่ม ----------
+                      Row(
                         children: [
-                          Text(
-                            statusText,
-                            style: TextStyle(
-                              color: statusColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                          // ----- ปุ่ม มา -----
+                          ElevatedButton(
+                            onPressed: isLocked
+                                ? null
+                                : () async {
+                                    await FirebaseFirestore.instance
+                                        .collection('bookings')
+                                        .doc(doc.id)
+                                        .update({'status': 'arrived'});
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: status == 'arrived'
+                                  ? Colors.green
+                                  : status == 'absent'
+                                  ? Colors.grey
+                                  : Colors.blue,
+                              disabledBackgroundColor: status == 'arrived'
+                                  ? Colors.green
+                                  : Colors.grey,
+                              minimumSize: const Size(80, 32),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: Text(
+                              status == 'arrived' ? 'เสร็จแล้ว' : 'มา',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 6),
-                          if (status == 'waiting')
-                            ElevatedButton(
-                              onPressed: () async {
-                                await firestoreService.callNextQueueByAdmin(
-                                  doc.id,
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                minimumSize: const Size(80, 32),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                ),
-                              ),
-                              child: const Text(
-                                'รอคิว',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          if (status == 'serving')
-                            ElevatedButton(
-                              onPressed: () async {
-                                await firestoreService.finishQueueByAdmin(
-                                  doc.id,
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                minimumSize: const Size(100, 32),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                ),
-                              ),
-                              child: const Text(
-                                'กำลังให้บริการ',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                          const SizedBox(width: 6),
+
+                          // ----- ปุ่ม ไม่มา -----
+                          ElevatedButton(
+                            onPressed: isLocked
+                                ? null
+                                : () async {
+                                    await FirebaseFirestore.instance
+                                        .collection('bookings')
+                                        .doc(doc.id)
+                                        .update({'status': 'absent'});
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: status == 'absent'
+                                  ? Colors.red
+                                  : status == 'arrived'
+                                  ? Colors.grey
+                                  : Colors.blue,
+                              disabledBackgroundColor: status == 'absent'
+                                  ? Colors.red
+                                  : Colors.grey,
+                              minimumSize: const Size(80, 32),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
                               ),
                             ),
+                            child: const Text(
+                              'ไม่มา',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ],
