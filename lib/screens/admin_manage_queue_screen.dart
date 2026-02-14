@@ -62,8 +62,8 @@ class AdminManageQueueScreen extends StatelessWidget {
               final status = data['status'] ?? 'waiting';
               final queueLabel = data['queueLabel'] ?? 'คิว ${index + 1}';
               final queueColor = _getQueueColor(status);
-
-              final bool isLocked = status == 'arrived' || status == 'absent';
+              final bool isLocked =
+                  status == 'arrived' || status == 'absent';
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
@@ -73,8 +73,9 @@ class AdminManageQueueScreen extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // ---------- เลขคิว ----------
+                      // -------- เลขคิว --------
                       Container(
                         width: 55,
                         height: 32,
@@ -94,7 +95,7 @@ class AdminManageQueueScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
 
-                      // ---------- ข้อมูล ----------
+                      // -------- ข้อมูลลูกค้า --------
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,8 +106,10 @@ class AdminManageQueueScreen extends StatelessWidget {
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: 4),
                             Text(
                               data['phone'] ?? '-',
                               style: const TextStyle(
@@ -114,7 +117,7 @@ class AdminManageQueueScreen extends StatelessWidget {
                                 color: Colors.black54,
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: 4),
                             Text(
                               data['time'] ?? '-',
                               style: const TextStyle(
@@ -126,74 +129,91 @@ class AdminManageQueueScreen extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
 
-                      // ---------- ปุ่ม ----------
-                      Row(
+                      // -------- ปุ่มแนวตั้ง --------
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          // ----- ปุ่ม มา -----
-                          ElevatedButton(
-                            onPressed: isLocked
-                                ? null
-                                : () async {
-                                    await FirebaseFirestore.instance
-                                        .collection('bookings')
-                                        .doc(doc.id)
-                                        .update({'status': 'arrived'});
-                                  },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: status == 'arrived'
-                                  ? Colors.green
-                                  : status == 'absent'
-                                  ? Colors.grey
-                                  : Colors.blue,
-                              disabledBackgroundColor: status == 'arrived'
-                                  ? Colors.green
-                                  : Colors.grey,
-                              minimumSize: const Size(80, 32),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                          // ปุ่ม มา
+                          SizedBox(
+                            width: 85,
+                            height: 34,
+                            child: ElevatedButton(
+                              onPressed: isLocked
+                                  ? null
+                                  : () async {
+                                      await FirebaseFirestore.instance
+                                          .collection('bookings')
+                                          .doc(doc.id)
+                                          .update({'status': 'arrived'});
+                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: status == 'arrived'
+                                    ? Colors.green
+                                    : status == 'absent'
+                                        ? Colors.grey
+                                        : Colors.blue,
+                                disabledBackgroundColor:
+                                    status == 'arrived'
+                                        ? Colors.green
+                                        : Colors.grey,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(10),
+                                ),
                               ),
-                            ),
-                            child: Text(
-                              status == 'arrived' ? 'เสร็จแล้ว' : 'มา',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                              child: Text(
+                                status == 'arrived'
+                                    ? 'เสร็จ'
+                                    : 'มา',
+                                    maxLines: 1,                  // 👈 บังคับบรรทัดเดียว
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 6),
 
-                          // ----- ปุ่ม ไม่มา -----
-                          ElevatedButton(
-                            onPressed: isLocked
-                                ? null
-                                : () async {
-                                    await FirebaseFirestore.instance
-                                        .collection('bookings')
-                                        .doc(doc.id)
-                                        .update({'status': 'absent'});
-                                  },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: status == 'absent'
-                                  ? Colors.red
-                                  : status == 'arrived'
-                                  ? Colors.grey
-                                  : Colors.blue,
-                              disabledBackgroundColor: status == 'absent'
-                                  ? Colors.red
-                                  : Colors.grey,
-                              minimumSize: const Size(80, 32),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                          const SizedBox(height: 8),
+
+                          // ปุ่ม ไม่มา
+                          SizedBox(
+                            width: 85,
+                            height: 34,
+                            child: ElevatedButton(
+                              onPressed: isLocked
+                                  ? null
+                                  : () async {
+                                      await FirebaseFirestore.instance
+                                          .collection('bookings')
+                                          .doc(doc.id)
+                                          .update({'status': 'absent'});
+                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: status == 'absent'
+                                    ? Colors.red
+                                    : status == 'arrived'
+                                        ? Colors.grey
+                                        : Colors.blue,
+                                disabledBackgroundColor:
+                                    status == 'absent'
+                                        ? Colors.red
+                                        : Colors.grey,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(10),
+                                ),
                               ),
-                            ),
-                            child: const Text(
-                              'ไม่มา',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                              child: const Text(
+                                'ไม่มา',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
