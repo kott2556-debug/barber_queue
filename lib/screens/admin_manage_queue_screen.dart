@@ -62,8 +62,7 @@ class AdminManageQueueScreen extends StatelessWidget {
               final status = data['status'] ?? 'waiting';
               final queueLabel = data['queueLabel'] ?? 'คิว ${index + 1}';
               final queueColor = _getQueueColor(status);
-              final bool isLocked =
-                  status == 'arrived' || status == 'absent';
+              final bool isLocked = status == 'arrived' || status == 'absent';
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
@@ -152,22 +151,17 @@ class AdminManageQueueScreen extends StatelessWidget {
                                 backgroundColor: status == 'arrived'
                                     ? Colors.green
                                     : status == 'absent'
-                                        ? Colors.grey
-                                        : Colors.blue,
-                                disabledBackgroundColor:
-                                    status == 'arrived'
-                                        ? Colors.green
-                                        : Colors.grey,
+                                    ? Colors.grey
+                                    : Colors.blue,
+                                disabledBackgroundColor: status == 'arrived'
+                                    ? Colors.green
+                                    : Colors.grey,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
                               child: Text(
-                                status == 'arrived'
-                                    ? 'เสร็จ'
-                                    : 'มา',
-                                    maxLines: 1,                  // 👈 บังคับบรรทัดเดียว
+                                status == 'arrived' ? 'เสร็จ' : 'มา',
                                 style: const TextStyle(
                                   fontSize: 13,
                                   color: Colors.white,
@@ -196,15 +190,13 @@ class AdminManageQueueScreen extends StatelessWidget {
                                 backgroundColor: status == 'absent'
                                     ? Colors.red
                                     : status == 'arrived'
-                                        ? Colors.grey
-                                        : Colors.blue,
-                                disabledBackgroundColor:
-                                    status == 'absent'
-                                        ? Colors.red
-                                        : Colors.grey,
+                                    ? Colors.grey
+                                    : Colors.blue,
+                                disabledBackgroundColor: status == 'absent'
+                                    ? Colors.red
+                                    : Colors.grey,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
                               child: const Text(
