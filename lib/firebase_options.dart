@@ -72,4 +72,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'baberqueue.firebasestorage.app',
     iosBundleId: 'com.example.barberQueue',
   );
+
 }
