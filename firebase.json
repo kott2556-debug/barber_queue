@@ -29,6 +29,10 @@
     ],
     "rewrites": [
       {
+        "source": "/preview.png",
+        "destination": "/preview.png"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
